@@ -99,7 +99,8 @@ RUN --mount=type=cache,dst=/var/cache \
         rodoma92/kde-cdemu-manager \
         rodoma92/rmlint \
         ilyaz/LACT \
-        tulilirockz/fw-fanctrl; \
+        tulilirockz/fw-fanctrl \
+        zhullyb/v2rayA;
     do \
         dnf5 -y copr enable $copr; \
         dnf5 -y config-manager setopt copr:copr.fedorainfracloud.org:${copr////:}.priority=98 ;\
@@ -395,6 +396,13 @@ RUN --mount=type=cache,dst=/var/cache \
     curl -Lo /usr/bin/winetricks https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks && \
     chmod +x /usr/bin/winetricks && \
     /ctx/cleanup
+
+# Install V2ray
+RUN --mount=type=cache,dst=/var/cache/libdnf5 \
+    --mount=type=cache,dst=/var/cache/rpm-ostree \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
+    dnf5 -y install v2ray && /ctx/cleanup
 
 # Configure KDE & GNOME
 RUN --mount=type=cache,dst=/var/cache \
