@@ -42,7 +42,7 @@ on:
         default: false
 env:
   PULL_IMAGE_REGISTRY: ghcr.io/ublue-os
-  PUSH_IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  PUSH_IMAGE_REGISTRY: {{ secrets.PUSH_IMAGE_REGISTRY }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
