@@ -71,7 +71,7 @@ jobs:
             is_latest_version: true
             is_stable_version: true
             kernel_flavor: bazzite # must match a kernel_flavor from akmods repo
-            kernel_version: 6.14.3-101.bazzite.fc42.x86_64 # must match a cached version of the above flavor
+            kernel_version: 6.14.4-103.bazzite.fc42.x86_64 # must match a cached version of the above flavor
         exclude:
           - target_image_flavor: surface
           - base_name: bazzite
@@ -182,7 +182,6 @@ jobs:
           cd $(mktemp -d)
           gh run download --repo=$docs_repo -n github-pages
           tar -xC "$DOCS_DIR" -f artifact.tar
-          rm $PWD
 
       - name: Check just syntax
         uses: ublue-os/just-action@bda593098a84a84973b002b4377709166a68be52 # v2
@@ -212,7 +211,7 @@ jobs:
             sudo podman pull ${{ env.PULL_IMAGE_REGISTRY }}/akmods-${{ matrix.target_nvidia_flavor }}:${{ matrix.kernel_flavor}}-${{ matrix.fedora_version }}-${{ matrix.kernel_version }}
 
             # Add rechunk as well to remove this source of failure
-            sudo podman pull ghcr.io/hhd-dev/rechunk:v1.2.1
+            sudo podman pull ghcr.io/hhd-dev/rechunk:v1.2.2
 
       - name: Get source versions
         id: labels
@@ -339,9 +338,9 @@ jobs:
       # Reprocess raw-img using rechunker which will delete it
       - name: Run Rechunker
         id: rechunk
-        uses: hhd-dev/rechunk@c945e9ec8ad4466f888e41ab7f4d5ba2f74a8ee4 # v1.2.1
+        uses: hhd-dev/rechunk@ca77507401f8700bb0b25ebecbbf980a078cd180 # v1.2.2
         with:
-          rechunk: 'ghcr.io/hhd-dev/rechunk:v1.2.1'
+          rechunk: 'ghcr.io/hhd-dev/rechunk:v1.2.2'
           ref: 'raw-img'
           prev-ref: '${{ steps.generate-prev-ref.outputs.ref }}'
           version: '${{ steps.generate-version.outputs.tag }}'
