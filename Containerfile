@@ -89,7 +89,6 @@ RUN --mount=type=cache,dst=/var/cache \
         ycollet/audinux \
         bazzite-org/rom-properties \
         bazzite-org/webapp-manager \
-        bazzite-org/vk_hdr_layer \
         hhd-dev/hhd \
         che/nerd-fonts \
         hikariknight/looking-glass-kvmfr \
@@ -371,8 +370,7 @@ RUN --mount=type=cache,dst=/var/cache \
         libobs_glcapture.x86_64 \
         libobs_vkcapture.i686 \
         libobs_glcapture.i686 \
-        vk_hdr_layer.x86_64 \
-        vk_hdr_layer.i686 && \
+        VK_hdr_layer && \
     dnf5 -y --setopt=install_weak_deps=False install \
         steam \
         lutris && \
@@ -527,7 +525,6 @@ RUN --mount=type=cache,dst=/var/cache \
     sed -i 's/#UserspaceHID.*/UserspaceHID=true/' /etc/bluetooth/input.conf && \
     sed -i "s/^SCX_SCHEDULER=.*/SCX_SCHEDULER=scx_bpfland/" /etc/default/scx && \
     sed -i "s|grub_probe\} --target=device /\`|grub_probe} --target=device /sysroot\`|g" /usr/bin/grub2-mkconfig && \
-    rm -f /usr/share/vulkan/icd.d/lvp_icd.*.json && \
     rm -f /usr/lib/systemd/system/service.d/50-keep-warm.conf && \
     mkdir -p "/etc/xdg/autostart" && \
     cp "/usr/share/applications/discover_overlay.desktop" "/etc/xdg/autostart/discover_overlay.desktop" && \
@@ -586,7 +583,6 @@ RUN --mount=type=cache,dst=/var/cache \
         ublue-os/packages \
         bazzite-org/LatencyFleX \
         bazzite-org/obs-vkcapture \
-        bazzite-org/vk_hdr_layer \
         ycollet/audinux \
         bazzite-org/rom-properties \
         bazzite-org/webapp-manager \
