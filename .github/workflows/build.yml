@@ -71,7 +71,7 @@ jobs:
             is_latest_version: true
             is_stable_version: true
             kernel_flavor: bazzite # must match a kernel_flavor from akmods repo
-            kernel_version: 6.14.4-104.bazzite.fc42.x86_64 # must match a cached version of the above flavor
+            kernel_version: 6.14.6-102.bazzite.fc42.x86_64 # must match a cached version of the above flavor
         exclude:
           - target_image_flavor: surface
           - base_name: bazzite
@@ -240,7 +240,7 @@ jobs:
           UPSTREAM_TAG="${{ env.SOURCE_IMAGE_VERSION }}"
           # Remove .0 suffix from upstream tag so we can add our own and
           # the wrong one does not end up in the image.
-          UPSTREAM_TAG="${UPSTREAM_TAG%.*}"
+          UPSTREAM_TAG="${UPSTREAM_TAG%\.[0-9]}" 
           FEDORA_VERSION="${{ matrix.fedora_version }}"
           SHA_SHORT="${GITHUB_SHA::7}"
 
