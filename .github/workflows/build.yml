@@ -467,8 +467,8 @@ jobs:
       - name: Push to Alibaba Cloud ACR
         id: push_acr
         run: |
-          ACR_REGISTRY="${{ secrets.ACR_REGISTRY }}"
-          ACR_NAMESPACE="${{ secrets.ACR_NAMESPACE }}"
+          ACR_REGISTRY="${{ env.ACR_REGISTRY }}"
+          ACR_NAMESPACE="${{ env.ACR_NAMESPACE }}"
 
           IMAGE_NAME="${{ matrix.image_name }}"
           IMAGE_TAG="${{ steps.generate-version.outputs.tag }}"
