@@ -61,10 +61,10 @@ jobs:
       fail-fast: false
       matrix:
         base_image_flavor: [main]
-        base_name: [bazzite, bazzite-deck, bazzite-nvidia, bazzite-deck-nvidia]
-        base_image_name: [kinoite, silverblue]
-        target_image_flavor: [main, asus, surface]
-        target_nvidia_flavor: [nvidia, nvidia-open]
+        base_name: [bazzite]
+        base_image_name: [kinoite]
+        target_image_flavor: [main]
+        target_nvidia_flavor: [nvidia]
         fedora_version: [42]
         include:
           - fedora_version: 42
@@ -467,13 +467,13 @@ jobs:
           ACR_NAMESPACE: ${{ vars.ACR_NAMESPACE }}
           ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
           ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
-          IMAGE_NAME: "${{ matrix.image_name }}"
-          IMAGE_TAG: "${{ steps.generate-version.outputs.tag }}"
-          SOURCE_REGISTRY: "${{ steps.registry_case.outputs.lowercase }}"
-          TARGET_IMAGE: "${ACR_REGISTRY}/${ACR_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}"
+          IMAGE_NAME: ${{ matrix.image_name }}
+          IMAGE_TAG: ${{ steps.generate-version.outputs.tag }}
+          SOURCE_REGISTRY: ${{ steps.registry_case.outputs.lowercase }}
         run: |
           SOURCE_IMAGE="${SOURCE_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
           TARGET_IMAGE="${ACR_REGISTRY}/${ACR_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}"
+          
           echo "Attempting to log in to $ACR_REGISTRY"
           echo "${ACR_PASSWORD}" | docker login ${ACR_REGISTRY} --username "${ACR_USERNAME}" --password-stdin
           echo "Login successful. Attempting to tag and push image."
