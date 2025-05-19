@@ -64,7 +64,7 @@ jobs:
         base_name: [bazzite]
         base_image_name: [kinoite]
         target_image_flavor: [main]
-        target_nvidia_flavor: [nvidia]
+        target_nvidia_flavor: [nvidia-open]
         fedora_version: [42]
         include:
           - fedora_version: 42
