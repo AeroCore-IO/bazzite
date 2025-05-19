@@ -473,9 +473,11 @@ jobs:
           ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
           IMAGE_NAME: "${{ matrix.image_name }}"
           IMAGE_TAG: "${{ steps.generate-version.outputs.tag }}"
-          SOURCE_IMAGE: "${{ steps.registry_case.outputs.lowercase }}/${IMAGE_NAME}:${IMAGE_TAG}"
+          SOURCE_REGISTRY: "${{ steps.registry_case.outputs.lowercase }}"
           TARGET_IMAGE: "${ACR_REGISTRY}/${ACR_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}"
         run: |
+          SOURCE_IMAGE="${SOURCE_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+          TARGET_IMAGE="${ACR_REGISTRY}/${ACR_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}"
           echo "Attempting to log in to $ACR_REGISTRY"
           echo "${ACR_PASSWORD}" | docker login ${ACR_REGISTRY} --username "${ACR_USERNAME}" --password-stdin
           echo "Login successful. Attempting to tag and push image."
