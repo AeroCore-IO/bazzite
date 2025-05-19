@@ -466,18 +466,18 @@ jobs:
 
       - name: Push to Alibaba Cloud ACR
         id: push_acr
+        env:
+          ACR_REGISTRY: ${{ vars.ACR_REGISTRY }}
+          ACR_NAMESPACE: ${{ vars.ACR_NAMESPACE }}
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+          IMAGE_NAME: "${{ matrix.image_name }}"
+          IMAGE_TAG: "${{ steps.generate-version.outputs.tag }}"
+          SOURCE_IMAGE: "${{ steps.registry_case.outputs.lowercase }}/${IMAGE_NAME}:${IMAGE_TAG}"
+          TARGET_IMAGE: "${ACR_REGISTRY}/${ACR_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}"
         run: |
-          ACR_REGISTRY="${{ vars.ACR_REGISTRY }}"
-          ACR_NAMESPACE="${{ vars.ACR_NAMESPACE }}"
-
-          IMAGE_NAME="${{ matrix.image_name }}"
-          IMAGE_TAG="${{ steps.generate-version.outputs.tag }}"
-
-          SOURCE_IMAGE="${{ steps.registry_case.outputs.lowercase }}/${IMAGE_NAME}:${IMAGE_TAG}"
-          TARGET_IMAGE="${ACR_REGISTRY}/${ACR_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}"
-
           echo "Attempting to log in to $ACR_REGISTRY"
-          echo "${{ secrets.ACR_PASSWORD }}" | docker login ${ACR_REGISTRY} --username "${{ secrets.ACR_USERNAME }}" --password-stdin
+          echo "${ACR_PASSWORD}" | docker login ${ACR_REGISTRY} --username "${ACR_USERNAME}" --password-stdin
           echo "Login successful. Attempting to tag and push image."
 
           if docker image inspect ${SOURCE_IMAGE} >/dev/null 2>&1; then
