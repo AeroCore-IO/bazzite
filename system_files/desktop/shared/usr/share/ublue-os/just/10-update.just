@@ -11,10 +11,8 @@ update:
 
     /usr/bin/topgrade --config /usr/share/ublue-os/topgrade.toml --keep
 
-alias auto-update := toggle-updates
-
 # Turn automatic updates on or off
-toggle-updates ACTION="prompt":
+_toggle-updates ACTION="prompt":
     #!/usr/bin/bash
     source /usr/lib/ujust/ujust.sh
     CURRENT_STATE="$(systemctl is-enabled uupd.timer)"
