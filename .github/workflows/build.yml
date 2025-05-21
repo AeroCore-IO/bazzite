@@ -466,9 +466,7 @@ jobs:
         if: |
           github.event_name != 'pull_request' &&
           vars.ACR_REGISTRY != '' &&
-          vars.ACR_NAMESPACE != '' &&
-          secrets.ACR_USERNAME != '' &&
-          secrets.ACR_PASSWORD != ''
+          vars.ACR_NAMESPACE != ''
         env:
           ACR_REGISTRY: ${{ vars.ACR_REGISTRY }}
           ACR_NAMESPACE: ${{ vars.ACR_NAMESPACE }}
