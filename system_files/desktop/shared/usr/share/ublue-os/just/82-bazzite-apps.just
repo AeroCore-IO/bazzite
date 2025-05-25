@@ -1,21 +1,18 @@
 # vim: set ft=make :
 
-# Install LACT for overclocking & undervolting AMD GPUs
+# Install LACT to control your AMD, Nvidia or Intel GPU on a Linux system.
 install-lact:
     #!/usr/bin/bash
-    ublue-update --wait
     rpm-ostree kargs --append-if-missing=$(printf 'amdgpu.ppfeaturemask=0x%x\n' "$(($(cat /sys/module/amdgpu/parameters/ppfeaturemask) | 0x4000))")
-    if [[ ${BASE_IMAGE_NAME} == 'silverblue' ]]; then
-        rpm-ostree install -y lact-libadwaita
-    else
-        rpm-ostree install -y lact
-    fi
+    flatpak --system install -y flathub io.github.ilya_zlobintsev.LACT
     echo 'Complete, please reboot to apply changes.'
 
 # Install CoolerControl, a GUI for viewing all your system's sensors and for creating custom fan and pump profiles based on any available temperature sensor28
 install-coolercontrol:
     #!/usr/bin/bash
-    ublue-update --wait
+    echo 'Enabling Terra Repository.'
+    sudo sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/terra.repo
+    echo 'Installing Cooler Control'
     rpm-ostree install -y liquidctl coolercontrol
     echo 'Complete, please reboot to apply changes.'
 
@@ -35,7 +32,6 @@ install-openrazer:
     source /usr/lib/ujust/ujust.sh
     OPENRAZER_CONFIGURATOR_APP="None of openrazer frontend apps"
     sudo curl -Lo /etc/yum.repos.d/hardware:razer.repo https://openrazer.github.io/hardware:razer.repo && \
-    ublue-update --wait && \
     rpm-ostree install -y openrazer-daemon && \
         if ! grep -q "plugdev" /etc/group; then \
       sudo bash -c 'grep "plugdev" /lib/group >> /etc/group' \
@@ -58,6 +54,8 @@ install-openrazer:
     fi
     echo "$OPENRAZER_CONFIGURATOR_APP is installed"
     echo "Please reboot to apply needed changes."
+
+alias get-emudeck := install-emudeck
 
 # Install EmuDeck (https://www.emudeck.com/)
 install-emudeck:
@@ -173,39 +171,6 @@ remove-opentabletdriver:
     sudo -A rm /etc/udev/rules.d/71-opentabletdriver.rules && \
     flatpak --system remove -y flathub net.opentabletdriver.OpenTabletDriver && \ 
     systemctl disable --user --now opentabletdriver.service
-
-# Install Docker, a platform designed to help developers build, share, and run container applications
-install-docker:
-    #!/usr/bin/bash
-    set -eo pipefail
-    [[ ${DEBUG:-} -eq 1 ]] && set -x
-    [[ $(id -u) -eq 0 ]] && {
-        echo >&2 "Dont run this as root"
-        exit 1
-    }
-    mkdir -p ~/.local/bin
-    brew install docker
-    # Handle plugins installation separately to handle file config collision
-    brew install docker-buildx docker-compose || {
-      brew link --overwrite docker-buildx docker-compose
-    }
-
-    [[ -e ~/.local/bin/docker ]] && {
-      gum confirm "There is a file in ~/.local/bin/docker. Do you wish to override it?" || exit 0
-    }
-    ln -sf $(which docker) ~/.local/bin/docker
-    [[ -e /usr/local/bin/docker ]] && {
-      gum confirm "There is a file in /usr/local/bin/docker. Do you wish to override it?" || exit 0
-    }
-    sudo ln -sf $(which docker) /usr/local/bin/docker
-    # Enable podman sockets
-    systemctl --user enable --now podman.socket
-    sudo systemctl enable --now podman.socket
-    # Add podman sockets to docker contexts
-    ctx=$(docker context create podman --docker "host=unix://$(podman system info  --format '{{{{.Host.RemoteSocket.Path}}')") && \
-      docker context use $ctx && unset -v ctx || true
-    ctx=$(sudo docker context create podman-rootful --docker "host=unix://$(sudo podman system info  --format '{{{{.Host.RemoteSocket.Path}}')") && \
-      sudo docker context use $ctx && unset -v ctx || true
 
 # Create fedora distrobox if it doesn't exist
 [private]

@@ -27,7 +27,7 @@ enable-rmlint ACTION="":
         echo "${red} rmlint has already been enabled!"
         exit 0
       fi
-      ublue-update --wait
+      sudo dnf5 -y copr enable rodoma92/rmlint
       rpm-ostree install --apply-live -y rmlint
       sudo sed -i 's@RMLINT_SKIP="1"@RMLINT_SKIP="0"@g' /etc/conf.d/btrfs-dedup
       echo "rmlint has been reenabled!"
@@ -36,8 +36,8 @@ enable-rmlint ACTION="":
         echo "${red} rmlint has already been disabled!"
         exit 0
       fi
-      ublue-update --wait
       rpm-ostree remove -y rmlint
+      sudo dnf5 -y copr disable rodoma92/rmlint
       sudo sed -i 's@RMLINT_SKIP="0"@RMLINT_SKIP="1"@g' /etc/conf.d/btrfs-dedup
       echo "rmlint has been disabled."
     fi
