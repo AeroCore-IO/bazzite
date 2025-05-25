@@ -14,7 +14,7 @@ _install-system-flatpaks:
     flatpak --system -y install --reinstall --or-update ${FLATPAK_LIST}
 
 # Toggle SSH availability on boot
-toggle-ssh:
+toggle-ssh ACTION="":
     #!/usr/bin/bash
     source /usr/lib/ujust/ujust.sh
     # Get hostname and IP address
@@ -25,19 +25,28 @@ toggle-ssh:
     if systemctl is-enabled sshd | grep -q enabled; then
       SSH_STATUS="Enabled"
     fi
-    # Display current status
-    echo -e "\n${bold}Hostname:${normal} $HOSTNAME"
-    echo -e "${bold}IP Address:${normal} $IP_ADDRESS"
-    if [ "$SSH_STATUS" == "Enabled" ]; then
-      echo -e "${bold}SSH Availability on Boot:${normal} ${green}$SSH_STATUS${normal}\n"
-    else
-      echo -e "${bold}SSH Availability on Boot:${normal} ${yellow}$SSH_STATUS${normal}\n"
+    OPTION="{{ ACTION }}"
+    if [ "$OPTION" == "help" ]; then
+      echo "Usage: ujust toggle-ssh <option>"
+      echo "  <option>: Specify the option to skip the interactive prompt"
+      echo "  Use 'enable' to enable SSH on boot"
+      echo "  Use 'disable' to disable SSH on boot"
+      exit 0
+    elif [ "$OPTION" == "" ]; then
+      # Display current status
+      echo -e "\n${bold}Hostname:${normal} $HOSTNAME"
+      echo -e "${bold}IP Address:${normal} $IP_ADDRESS"
+      if [ "$SSH_STATUS" == "Enabled" ]; then
+        echo -e "${bold}SSH Availability on Boot:${normal} ${green}$SSH_STATUS${normal}\n"
+      else
+        echo -e "${bold}SSH Availability on Boot:${normal} ${yellow}$SSH_STATUS${normal}\n"
+      fi
+      # Prompt user for action
+      echo "Choose an option:"
+      OPTION=$(ugum choose "Enable SSH" "Disable SSH" "Exit without saving")
     fi
-    # Prompt user for action
-    echo "Choose an option:"
-    CHOICE=$(ugum choose "Enable SSH" "Disable SSH" "Exit without saving")
-    case "$CHOICE" in
-      "Enable SSH")
+    case "$OPTION" in
+      "Enable SSH"|enable)
         echo "Enabling SSH on boot..."
         sudo systemctl enable sshd
         sudo systemctl start sshd
@@ -45,24 +54,34 @@ toggle-ssh:
         echo -e "${bold}${USER}@${IP_ADDRESS}${normal}"
         echo " "
         ;;
-      "Disable SSH")
+      "Disable SSH"|disable)
         echo "Disabling SSH on boot..."
         sudo systemctl disable sshd
         sudo systemctl stop sshd
         echo -e "SSH is now ${yellow}Disabled${normal}."
         echo " "
         ;;
-      "Exit without saving")
+      "Exit without saving"|*)
         echo "No changes made."
         ;;
-      *)
-        echo "Invalid choice. Exiting without changes."
-        ;;
     esac
+
+# Regenerate GRUB config, useful in dual-boot scenarios where a second operating system isn't listed
+regenerate-grub:
+    #!/usr/bin/bash
+    source /usr/libexec/bazzite-boot-remount
+    remount_boot_rw
+    if [ -d /sys/firmware/efi ]; then
+      sudo grub2-mkconfig -o /etc/grub2-efi.cfg
+    else
+      sudo grub2-mkconfig -o /etc/grub2.cfg
+    fi
+    remount_boot_ro
 
 # Configure grub bootmenu visibility. pass action 'help' for more info.
 configure-grub ACTION="":
     #!/usr/bin/bash
+    source /usr/libexec/bazzite-boot-remount
     source /usr/lib/ujust/ujust.sh
     # Function to display usage/help with some color
     print_help() {
@@ -92,12 +111,12 @@ configure-grub ACTION="":
             echo "  - ${bold}0${normal}: GRUB always shows on boot."
             ;;
           1)
-            echo "Current GRUB menu_auto_hide setting: ${bold}${yellow}1 (Hide After Successful Boot)${normal}"
+            echo "Current GRUB menu_auto_hide setting: ${bold}${yellow}1 (Hide After Successful Boot, except when Dual Booting)${normal}"
             echo "Explanation:"
             echo "  - ${bold}1${normal}: GRUB is hidden after a successful boot, but it will show if dual-booting."
             ;;
           2)
-            echo "Current GRUB menu_auto_hide setting: ${bold}${cyan}2 (Always Hide)${normal}"
+            echo "Current GRUB menu_auto_hide setting: ${bold}${cyan}2 (Hide After Successful Boot)${normal}"
             echo "Explanation:"
             echo "  - ${bold}2${normal}: GRUB is hidden after a successful boot, even for dual-boot setups."
             ;;
@@ -112,8 +131,8 @@ configure-grub ACTION="":
     # Interactive menu for choosing the new behavior
     interactive_menu() {
       local options=(
-        "Always Hide Grub (menu_auto_hide=2)"
-        "Hide After Successful Boot (menu_auto_hide=1)"
+        "Hide After Successful Boot (menu_auto_hide=2)"
+        "Same except when Dual Booting (menu_auto_hide=1)"
         "Always Show Grub (menu_auto_hide=0)"
         "Exit without changes"
       )
@@ -124,15 +143,16 @@ configure-grub ACTION="":
     # Function to apply the selected setting
     apply_setting() {
       local selected_option="$1"
+      remount_boot_rw
       # Support the interactive strings as well as short commands
       case "$(echo "$selected_option" | tr '[:upper:]' '[:lower:]')" in
         *"(menu_auto_hide=2)"*|hide)
           sudo grub2-editenv - set menu_auto_hide=2
-          echo "GRUB menu is now set to ${bold}${cyan}Always Hide${normal}."
+          echo "GRUB menu is now set to ${bold}${cyan}Hide After Successful Boot${normal}."
           ;;
         *"(menu_auto_hide=1)"*|unhide)
           sudo grub2-editenv - set menu_auto_hide=1
-          echo "GRUB menu is now set to ${bold}${yellow}Hide After Successful Boot${normal}."
+          echo "GRUB menu is now set to ${bold}${yellow}Hide After Successful Boot except when Dual Booting${normal}."
           ;;
         *"(menu_auto_hide=0)"*|show)
           sudo grub2-editenv - set menu_auto_hide=0
@@ -148,6 +168,7 @@ configure-grub ACTION="":
           echo "${bold}${red}Invalid option selected. No changes were made.${normal}"
           ;;
       esac
+      remount_boot_ro
     }
     OPTION="{{ ACTION }}"   # from “configure-grub ACTION=...”
     if [ "$OPTION" == "help" ]; then
@@ -175,6 +196,28 @@ add-user-to-input-group:
       sudo bash -c 'grep "input" /lib/group >> /etc/group'
     fi
     sudo usermod -a -G input $USER
+
+# Enables automounting of labeled BTRFS/EXT4 partitions under /run/media/system
+enable-automounting:
+    #!/usr/bin/bash
+    set -eo pipefail
+    rule=/etc/udev/rules.d/99-media-automount.rules
+    if [[ "$(readlink $rule || :)" == /dev/null ]]; then
+        sudo -A rm -f $rule
+    fi
+    if systemctl status --no-pager ublue-os-media-automount.service >/dev/null 2>&1; then
+        sudo -A systemctl enable --now ublue-os-media-automount.service
+    fi
+
+# Disables automounting of labeled BTRFS/EXT4 partitions under /run/media/system
+disable-automounting:
+    #!/usr/bin/bash
+    set -eo pipefail
+    rule=/etc/udev/rules.d/99-media-automount.rules
+    sudo ln -sf /dev/null $rule
+    if systemctl status --no-pager ublue-os-media-automount.service >/dev/null 2>&1; then
+        sudo -A systemctl disable ublue-os-media-automount.service
+    fi
 
 # Enable support for DisplayLink
 enable-displaylink:
@@ -234,6 +277,10 @@ configure-watchdog ACTION="":
 # Install and configure Decky Loader (https://github.com/SteamDeckHomebrew/decky-loader) and plugins for alternative handhelds
 setup-decky ACTION="install":
     #!/usr/bin/bash
+    if [[ $(id -u) -eq 0 ]]; then
+        echo >&2 "ERROR: Do not run this with sudo"
+        exit 1
+    fi
     source /usr/lib/ujust/ujust.sh
     DECKY_STATE="${b}${red}Not Installed${n}"
     if [[ -d $HOME/homebrew/plugins ]]; then
@@ -245,25 +292,39 @@ setup-decky ACTION="install":
       echo "  <option>: Specify the quick option to skip the prompt"
       echo "  Use 'install' to select Install Decky"
       echo "  Use 'prerelease' to select Install Decky Prerelease"
+      echo "  Use 'uninstall' to uninstall Decky Loader"
       exit 0
+    elif [ "$OPTION" == "" ]; then
+      echo "${bold}Decky Loader setup and configuration${normal}"
+      echo "Decky is $DECKY_STATE"
+      OPTION=$(Choose "Install Decky" "Install Decky Prerelease" "Uninstall Decky" "Exit")
     fi
     if [[ "${OPTION,,}" =~ install ]]; then
       export HOME=$(getent passwd ${SUDO_USER:-$USER} | cut -d: -f6)
       if [ ! -L "/home/deck" ] && [ ! -e "/home/deck" ]  && [ "$HOME" != "/home/deck" ]; then
         echo "Making a /home/deck symlink to fix plugins that do not use environment variables."
-        sudo ln -sf "$HOME" /home/deck
+        sudo -A ln -sf "$HOME" /home/deck
       fi
-      curl -L https://github.com/SteamDeckHomebrew/decky-installer/releases/latest/download/install_release.sh | sh
-      sudo chcon -R -t bin_t $HOME/homebrew/services/PluginLoader
+      if [[ -d ~/homebrew ]]; then
+        sudo -A chown -R --reference ~/ ~/homebrew
+      fi
+      curl -L https://github.com/SteamDeckHomebrew/decky-installer/releases/latest/download/install_release.sh |
+        sed 's|sudo|sudo -A |g' | sh
+      sudo -A chcon -R -t bin_t $HOME/homebrew/services/PluginLoader
     fi
     if [[ "${OPTION,,}" =~ prerelease ]]; then
       export HOME=$(getent passwd ${SUDO_USER:-$USER} | cut -d: -f6)
       if [ ! -L "/home/deck" ] && [ ! -e "/home/deck" ]  && [ "$HOME" != "/home/deck" ]; then
         echo "Making a /home/deck symlink to fix plugins that do not use environment variables."
-        sudo ln -sf "$HOME" /home/deck
+        sudo -A ln -sf "$HOME" /home/deck
       fi
       curl -L https://github.com/SteamDeckHomebrew/decky-installer/releases/latest/download/install_prerelease.sh | sh
-      sudo chcon -R -t bin_t $HOME/homebrew/services/PluginLoader
+      sudo -A chcon -R -t bin_t $HOME/homebrew/services/PluginLoader
+    fi
+    if [[ "${OPTION,,}" =~ uninstall ]]; then
+      echo "Uninstalling Decky Loader..."
+      curl -L https://github.com/SteamDeckHomebrew/decky-installer/releases/latest/download/uninstall.sh | sh
+      echo "Decky Loader has been uninstalled."
     fi
 
 # Ptyxis terminal transparency
@@ -506,9 +567,24 @@ toggle-password-feedback ACTION="":
 # Install Bazzite Buddy plugin to easily access changelogs in game mode!
 get-decky-bazzite-buddy:
     #!/bin/bash
-    PLUGIN_URL="https://github.com/xXJSONDeruloXx/bazzite-buddy/releases/download/stable/bazzite-buddy.zip"
+    REPO_OWNER="xXJSONDeruloXx"
+    REPO_NAME="bazzite-buddy"
     PLUGIN_NAME="bazzite-buddy"
     PLUGIN_DIR="$HOME/homebrew/plugins"
+    # Get the latest release information
+    echo "Fetching latest release information..."
+    RELEASE_INFO=$(curl -s "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest")
+    # Extract the download URL for the zip file
+    DOWNLOAD_URLS=$(echo "$RELEASE_INFO" | grep -o '"browser_download_url": "[^"]*\.zip"' | cut -d'"' -f4)
+    # Check if any zip files were found
+    if [ -z "$DOWNLOAD_URLS" ]; then
+      echo "No zip files found in the latest release. Falling back to stable URL..."
+      PLUGIN_URL="https://github.com/$REPO_OWNER/$REPO_NAME/releases/download/stable/bazzite-buddy.zip"
+    else
+      # Pick the first zip file (usually there's only one)
+      PLUGIN_URL=$(echo "$DOWNLOAD_URLS" | head -n 1)
+      echo "Found latest release: $PLUGIN_URL"
+    fi
     if [ ! -d "$PLUGIN_DIR" ]; then
       echo "Creating plugins directory with sudo..."
       sudo mkdir -p "$PLUGIN_DIR"
@@ -521,31 +597,100 @@ get-decky-bazzite-buddy:
       sudo rm -rf "$PLUGIN_NAME"
     fi
     # Download the zip file
-    echo "Downloading $PLUGIN_NAME from $PLUGIN_URL..."
-    sudo curl -L -o "${PLUGIN_NAME}.zip" "$PLUGIN_URL"
+    echo "Downloading plugin from $PLUGIN_URL..."
+    TEMP_ZIP="temp_plugin.zip"
+    sudo curl -L -o "$TEMP_ZIP" "$PLUGIN_URL"
     if [ $? -ne 0 ]; then
       echo "Download failed!"
       exit 1
     fi
-    echo "Extracting $PLUGIN_NAME..."
-    sudo unzip -o "${PLUGIN_NAME}.zip" -d .
+    echo "Extracting plugin..."
+    sudo unzip -o "$TEMP_ZIP" -d .
     if [ $? -ne 0 ]; then
       echo "Extraction failed!"
       exit 1
     fi
-    # Move the extracted files to the correct location if nested
+    # Handle different extracted folder names
+    # Look for any extracted folders that might contain the plugin
+    EXTRACTED_FOLDERS=$(find . -maxdepth 1 -type d -name "bazzite*" -o -name "Bazzite*" | grep -v "^\./$")
+    # If we found a folder but it's not the expected name
+    if [ -n "$EXTRACTED_FOLDERS" ] && [ ! -d "./$PLUGIN_NAME" ]; then
+      FOUND_FOLDER=$(echo "$EXTRACTED_FOLDERS" | head -n 1)
+      echo "Found plugin folder with different name: $FOUND_FOLDER"
+      echo "Renaming to $PLUGIN_NAME..."
+      sudo mv "$FOUND_FOLDER" "./$PLUGIN_NAME"
+    fi
+    # Handle nested folders structure if needed
     if [ -d "./${PLUGIN_NAME}/${PLUGIN_NAME}" ]; then
-      echo "Fixing folder structure..."
+      echo "Fixing nested folder structure..."
       sudo mv ./${PLUGIN_NAME}/${PLUGIN_NAME}/* ./${PLUGIN_NAME}/
       sudo rm -rf ./${PLUGIN_NAME}/${PLUGIN_NAME}
     fi
+    # Check if we have a plugin with capital letters
+    if [ ! -d "./$PLUGIN_NAME" ] && [ -d "./Bazzite.Buddy" ]; then
+      echo "Found Bazzite.Buddy folder, renaming to $PLUGIN_NAME..."
+      sudo mv "./Bazzite.Buddy" "./$PLUGIN_NAME"
+    fi
     # Clean up the downloaded ZIP file
     echo "Cleaning up..."
-    sudo rm -f "${PLUGIN_NAME}.zip"
+    sudo rm -f "$TEMP_ZIP"
     # Confirm installation
-    echo "$PLUGIN_NAME has been installed successfully to $PLUGIN_DIR!"
-    # Prompt user to restart Decky Loader
-    echo "Please restart Decky Loader to activate the plugin."
+    if [ -d "./$PLUGIN_NAME" ]; then
+      echo "$PLUGIN_NAME has been installed successfully to $PLUGIN_DIR!"
+      echo "Please restart Decky Loader to activate the plugin."
+    else
+      echo "Installation may have failed. Please check if the plugin is installed correctly."
+      echo "Plugin folder could not be found as expected."
+    fi
+
+# Toggle whether Steam launches with the -steamdeck flag, which causes Big Picture / Game Mode to emulate Steam Deck behavior. Disabling this can prevent games from forcing Steam Deck-specific assets, such as lower-resolution textures.
+_toggle-steamdeck-alias:
+    #!/usr/bin/bash
+    # Toggles whether Steam presents the system as a Steam Deck via -steamdeck
+    override_flag="$HOME/.config/bazzite/disable_steamdeck_flag"
+    session_dir="$HOME/.config/gamescope-session-plus/sessions.d"
+    session_file="$session_dir/steam"
+    mkdir -p "$(dirname "$override_flag")"
+    mkdir -p "$session_dir"
+    cat > "$session_file" <<'EOF'
+    DECK_OVERRIDE_FLAG="$HOME/.config/bazzite/disable_steamdeck_flag"
+    if [[ ! -f "$DECK_OVERRIDE_FLAG" ]]; then
+      export CLIENTCMD="steam -gamepadui -steamos3 -steampal -steamdeck"
+    else
+      export CLIENTCMD="steam -gamepadui -steamos3 -steampal"
+    fi
+    EOF
+    current_status="Enabled"
+    if [[ -f "$override_flag" ]]; then
+      current_status="Disabled"
+    fi
+    echo -e "\nCurrent Steam Deck presentation mode: $current_status\n"
+    CHOICE=$(ugum choose \
+      "Present as Steam Deck (Enable -steamdeck)" \
+      "Do Not Present as Steam Deck (Disable -steamdeck)" \
+      "Exit without changes")
+    case "$CHOICE" in
+      "Present as Steam Deck (Enable -steamdeck)")
+        if [[ -f "$override_flag" ]]; then
+          rm -f "$override_flag"
+          echo -e "\nSteam Deck presentation ENABLED. (-steamdeck will be passed to Steam)\n"
+          echo "Reboot your system for the change to take effect."
+        else
+          echo -e "\nAlready enabled.\n"
+        fi
+        ;;
+      "Do Not Present as Steam Deck (Disable -steamdeck)")
+        touch "$override_flag"
+        echo -e "\nSteam Deck presentation DISABLED. (-steamdeck will NOT be passed to Steam)\n"
+        echo "Reboot your system for the change to take effect."
+        ;;
+      "Exit without changes")
+        echo "No changes made."
+        ;;
+      *)
+        echo "Invalid choice. Exiting."
+        ;;
+    esac
 
 # get logs for this boot and last boot, cleanly output in terminal as pastebin links, to simplify troubleshooting and issue reporting.
 get-logs:

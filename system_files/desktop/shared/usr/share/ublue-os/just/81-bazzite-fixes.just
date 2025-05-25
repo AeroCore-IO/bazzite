@@ -89,7 +89,7 @@ toggle-bt-mic:
     fi
 
 # enable or disable wake-on-lan functionality
-toggle-wol:
+toggle-wol ACTION="":
     #!/usr/bin/bash
     source /usr/lib/ujust/ujust.sh
     INTERFACE=$(ip link show | awk '/state UP/ {print $2}' | tr -d ':' | grep -E '^(en|eth)')
@@ -106,10 +106,20 @@ toggle-wol:
     if [[ "$WOL_STATUS" == "g" ]]; then
       CURRENT_STATE="Enabled"
     fi
-    echo "Wake-on-LAN is currently: ${bold}${CURRENT_STATE}${normal}"
-    echo "Enable, Disable Wake-on-LAN, Force-Enable, or Exit without saving?"
-    echo "Note: Force-Enable will make WOL persist across reboots"
-    OPTION=$(ugum choose Enable Disable Force-Enable Exit)
+    OPTION="{{ ACTION }}"
+    if [ "$OPTION" == "help" ]; then
+      echo "Usage: ujust toggle-wol <option>"
+      echo "  <option>: Specify the quick option to skip the prompt"
+      echo "  Use 'enable' to enable Wake-on-LAN"
+      echo "  Use 'disable' to disable Wake-on-LAN"
+      echo "  Use 'force-enable' to force-enable Wake-on-LAN (persists across reboots)"
+      exit 0
+    elif [ -z "$OPTION" ]; then
+      echo "Wake-on-LAN is currently: ${bold}${CURRENT_STATE}${normal}"
+      echo "Enable, Disable Wake-on-LAN, Force-Enable, or Exit without saving?"
+      echo "Note: Force-Enable will make WOL persist across reboots"
+      OPTION=$(ugum choose Enable Disable Force-Enable Exit)
+    fi
     if [[ "${OPTION,,}" == "enable" ]]; then
       echo "You chose to enable Wake-on-LAN."
       echo "Requesting root privileges..."
@@ -180,7 +190,7 @@ toggle-i915-sleep-fix:
         echo -e "\nInvalid value for i915.enable_dc. Please choose a valid value.\n"
         return
       fi
-      sudo rpm-ostree kargs --replace "i915.enable_dc=$new_value"
+      rpm-ostree kargs --replace "i915.enable_dc=$new_value"
       echo -e "Kernel parameter updated. Reboot required to apply changes."
     }
     # Display current status
@@ -215,7 +225,7 @@ toggle-i915-sleep-fix:
         ;;
       "Unset Parameter")
         echo "Unsetting i915.enable_dc..."
-        sudo rpm-ostree kargs --delete "i915.enable_dc=[-0-9]"
+        rpm-ostree kargs --delete "i915.enable_dc=[-0-9]"
         echo -e "Kernel parameter unset. Reboot required to apply changes."
         ;;
       "Exit without changes")
