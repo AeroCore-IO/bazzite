@@ -304,6 +304,7 @@ RUN --mount=type=cache,dst=/var/cache \
         qemu \
         libvirt \
         lsb_release \
+        lolcat \
         uupd \
         rocm-hip \
         rocm-opencl \
