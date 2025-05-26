@@ -5,7 +5,7 @@ on:
   workflow_call:
 
 env:
-  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  IMAGE_REGISTRY: ${{ vars.ACR_REGISTRY }}/${{ vars.ACR_NAMESPACE }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}-iso
