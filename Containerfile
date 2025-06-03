@@ -141,6 +141,7 @@ RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=tmpfs,dst=/tmp \
+    dnf5 -y swap atheros-firmware atheros-firmware-20250311-1$(rpm -E %{dist}) && \
     if [[ "${IMAGE_FLAVOR}" =~ "asus" ]]; then \
         dnf5 -y copr enable lukenukem/asus-linux && \
         dnf5 -y install \
@@ -212,6 +213,8 @@ RUN --mount=type=cache,dst=/var/cache \
         fwupd-plugin-flashrom \
         fwupd-plugin-modem-manager \
         fwupd-plugin-uefi-capsule-data && \
+    dnf5 -y install \
+        mesa-va-drivers.i686 && \
     dnf5 -y install --enable-repo="*rpmfusion*" --disable-repo="*fedora-multimedia*" \
         libaacs \
         libbdplus \
@@ -229,6 +232,7 @@ RUN --mount=type=cache,dst=/var/cache \
         firefox \
         firefox-langpacks \
         htop && \
+    	dnf5 -y swap kde-partitionmanager gnome-disk-utility && \
     /ctx/cleanup
 
 # Install new packages
@@ -304,6 +308,7 @@ RUN --mount=type=cache,dst=/var/cache \
         qemu \
         libvirt \
         lsb_release \
+        lolcat \
         uupd \
         rocm-hip \
         rocm-opencl \
@@ -389,7 +394,7 @@ RUN --mount=type=cache,dst=/var/cache \
     chmod +x /usr/bin/winetricks && \
     /ctx/cleanup
 
-# Install yafti-go
+# Install yafti-go & ujust-picker from GitHub releases
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
@@ -397,6 +402,8 @@ RUN --mount=type=cache,dst=/var/cache \
     curl -sL "$(curl -s https://api.github.com/repos/Zeglius/yafti-go/releases/latest | jq -r '.assets[] | select(.name == "yafti-go").browser_download_url')" -o /bin/yafti-go && \
     chmod +x /bin/yafti-go && \
     chmod +x /usr/libexec/bazzite-yafti-launcher && \
+    curl -sL "$(curl -s https://api.github.com/repos/xXJSONDeruloXx/bazzite-ujust-picker/releases/latest | jq -r '.assets[] | select(.name | test("x86_64$")) | .browser_download_url')" -o /usr/bin/ujust-picker && \
+    chmod +x /usr/bin/ujust-picker && \
     /ctx/cleanup
 
 # Configure KDE & GNOME
@@ -556,6 +563,7 @@ RUN --mount=type=cache,dst=/var/cache \
     echo "import \"/usr/share/ublue-os/just/86-bazzite-windows.just\"" >> /usr/share/ublue-os/justfile && \
     echo "import \"/usr/share/ublue-os/just/87-bazzite-framegen.just\"" >> /usr/share/ublue-os/justfile && \
     echo "import \"/usr/share/ublue-os/just/88-bazzite-webapps.just\"" >> /usr/share/ublue-os/justfile && \
+    echo "import \"/usr/share/ublue-os/just/90-bazzite-picker.just\"" >> /usr/share/ublue-os/justfile && \
     echo "import \"/usr/share/ublue-os/just/90-bazzite-de.just\"" >> /usr/share/ublue-os/justfile && \
     if grep -q "kinoite" <<< "${BASE_IMAGE_NAME}"; then \
       systemctl enable usr-share-sddm-themes.mount && \
@@ -849,9 +857,6 @@ RUN --mount=type=cache,dst=/var/cache \
     systemctl disable jupiter-biosupdate.service && \
     systemctl disable jupiter-controller-update.service && \
     systemctl disable batterylimit.service && \
-    if grep -q "silverblue" <<< "${BASE_IMAGE_NAME}"; then \
-        dnf5 -y upgrade --enablerepo=updates-testing --refresh --advisory=FEDORA-2025-c358833c5d \
-    ; fi && \
     /ctx/image-info && \
     /ctx/build-initramfs && \
     /ctx/finalize
