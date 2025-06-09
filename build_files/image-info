@@ -12,8 +12,18 @@ LOGO_ICON="bazzite-logo-icon"
 LOGO_COLOR="0;38;2;138;43;226"
 CODE_NAME="Holographic"
 
+# Default container registry for published images
+# Can be overridden during the build to change image update source
+IMAGE_REGISTRY="${IMAGE_REGISTRY:-ghcr.io}"
+ACR_REGISTRY="${ACR_REGISTRY:-}"
+ACR_NAMESPACE="${ACR_NAMESPACE:-}"
+
 IMAGE_INFO="/usr/share/ublue-os/image-info.json"
-IMAGE_REF="ostree-image-signed:docker://ghcr.io/$IMAGE_VENDOR/$IMAGE_NAME"
+if [[ -n "$ACR_REGISTRY" && -n "$ACR_NAMESPACE" ]]; then
+  IMAGE_REF="ostree-image-signed:docker://$ACR_REGISTRY/$ACR_NAMESPACE/$IMAGE_NAME"
+else
+  IMAGE_REF="ostree-image-signed:docker://$IMAGE_REGISTRY/$IMAGE_VENDOR/$IMAGE_NAME"
+fi
 IMAGE_BRANCH_NORMALIZED=$IMAGE_BRANCH
 
 if [[ $IMAGE_BRANCH_NORMALIZED == "main" ]]; then

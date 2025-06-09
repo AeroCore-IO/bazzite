@@ -43,6 +43,9 @@ on:
 env:
   PULL_IMAGE_REGISTRY: ghcr.io/ublue-os
   PUSH_IMAGE_REGISTRY: {{ secrets.PUSH_IMAGE_REGISTRY }}
+  IMAGE_REGISTRY: ghcr.io
+  ACR_REGISTRY: ${{ vars.ACR_REGISTRY }}
+  ACR_NAMESPACE: ${{ vars.ACR_NAMESPACE }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -281,6 +284,9 @@ jobs:
           SHA_HEAD_SHORT=${{ env.SHA_HEAD_SHORT }}
           VERSION_TAG=${{ steps.generate-version.outputs.tag }}
           VERSION_PRETTY=${{ steps.generate-version.outputs.pretty }}
+          IMAGE_REGISTRY=${{ env.IMAGE_REGISTRY }}
+          ACR_REGISTRY=${{ env.ACR_REGISTRY }}
+          ACR_NAMESPACE=${{ env.ACR_NAMESPACE }}
           EOF
 
       # Build image using buildah and save it to raw-img
