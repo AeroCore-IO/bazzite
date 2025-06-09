@@ -12,8 +12,11 @@ LOGO_ICON="bazzite-logo-icon"
 LOGO_COLOR="0;38;2;138;43;226"
 CODE_NAME="Holographic"
 
+# Default container registry for published images
+IMAGE_REGISTRY="${IMAGE_REGISTRY:-ghcr.io}"
+
 IMAGE_INFO="/usr/share/ublue-os/image-info.json"
-IMAGE_REF="ostree-image-signed:docker://ghcr.io/$IMAGE_VENDOR/$IMAGE_NAME"
+IMAGE_REF="ostree-image-signed:docker://$IMAGE_REGISTRY/$IMAGE_VENDOR/$IMAGE_NAME"
 IMAGE_BRANCH_NORMALIZED=$IMAGE_BRANCH
 
 if [[ $IMAGE_BRANCH_NORMALIZED == "main" ]]; then
