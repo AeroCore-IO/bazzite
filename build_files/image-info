@@ -12,7 +12,7 @@ LOGO_ICON="bazzite-logo-icon"
 LOGO_COLOR="0;38;2;138;43;226"
 
 IMAGE_INFO="/usr/share/ublue-os/image-info.json"
-IMAGE_REF="ostree-image-signed:docker://ghcr.io/$IMAGE_VENDOR/$IMAGE_NAME"
+IMAGE_REF="ostree-image-signed:docker://registry.cn-guangzhou.aliyuncs.com/aerocore/$IMAGE_NAME"
 IMAGE_BRANCH_NORMALIZED=$IMAGE_BRANCH
 
 if [[ $IMAGE_BRANCH_NORMALIZED == "main" ]]; then
