@@ -13,6 +13,7 @@ LOGO_COLOR="0;38;2;138;43;226"
 CODE_NAME="Holographic"
 
 # Default container registry for published images
+# Can be overridden during the build to change image update source
 IMAGE_REGISTRY="${IMAGE_REGISTRY:-ghcr.io}"
 
 IMAGE_INFO="/usr/share/ublue-os/image-info.json"
