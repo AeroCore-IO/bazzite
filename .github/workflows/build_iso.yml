@@ -61,6 +61,14 @@ jobs:
 
           if [[ "${{ github.ref_name }}" == "testing" ]]; then
               TAG="testing"
+          fi
+
+          # Would like to implement in the future. This will allow us to support image tags from a PR.
+          #if [[ github.event.number ]]; then
+          #  TAG="pr-${{ github.event.number }}-${{ matrix.major_version }}"
+          #fi
+
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
       - name: Set Flatpaks Directory Shortname
         id: generate-flatpak-dir-shortname
