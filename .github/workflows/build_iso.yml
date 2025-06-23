@@ -94,7 +94,6 @@ jobs:
           FLATPAK_REFS_DIR_LIST=$(cat ${FLATPAK_REFS_DIR}/* | tr '\n' ' ' )
           # Generate install script
           cat << EOF > ${TEMP_FLATPAK_INSTALL_DIR}/script.sh
-          cat /temp_flatpak_install_dir/script.sh
           mkdir -p /flatpak/flatpak /flatpak/triggers
           mkdir /var/tmp || true
           chmod -R 1777 /var/tmp
