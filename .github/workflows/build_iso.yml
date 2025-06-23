@@ -44,7 +44,7 @@ jobs:
           - bazzite-gnome-surface-nvidia-open
           - bazzite-deck-nvidia
           - bazzite-deck-nvidia-gnome
-        major_version: [42]
+        major_version: [41]
     steps:
 
       - name: Free Disk Space (Ubuntu)
@@ -94,6 +94,7 @@ jobs:
           FLATPAK_REFS_DIR_LIST=$(cat ${FLATPAK_REFS_DIR}/* | tr '\n' ' ' )
           # Generate install script
           cat << EOF > ${TEMP_FLATPAK_INSTALL_DIR}/script.sh
+          cat /temp_flatpak_install_dir/script.sh
           mkdir -p /flatpak/flatpak /flatpak/triggers
           mkdir /var/tmp || true
           chmod -R 1777 /var/tmp
