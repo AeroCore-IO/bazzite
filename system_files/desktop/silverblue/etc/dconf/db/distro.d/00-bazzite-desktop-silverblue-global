@@ -10,13 +10,14 @@ hide-icon-shadow=false
 menu-button-terminal='ptyxis --new-window'
 menu-button-system-monitor='/usr/bin/missioncenter-helper'
 menu-button-extensions-app='com.mattjakeman.ExtensionManager.desktop'
-menu-button-software-center='gnome-software'
+menu-button-software-center='/usr/bin/bazaar window --auto-service'
 show-activities-button=true
 show-lockscreen=false
 show-power-option=false
 show-gamemode=false
 hide-forcequit=true
 show-distroshelf=true
+hide-warehouse=true
 
 # Keybindings
 [org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0]
