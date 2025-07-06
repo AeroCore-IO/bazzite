@@ -481,7 +481,7 @@ jobs:
             log_sum '```'
             echo "$ACR_PASSWORD" | sudo podman login "$ACR_REGISTRY" -u "$ACR_USERNAME" --password-stdin
             for tag in ${{ steps.generate-tags.outputs.alias_tags }}; do
-              dest_image="docker://$ACR_REGISTRY/$ACR_NAMESPACE/${{ env.IMAGE_NAME }}:$tag"
+              dest_image="$ACR_REGISTRY/$ACR_NAMESPACE/${{ env.IMAGE_NAME }}:$tag"
               sudo skopeo copy ${{ steps.rechunk.outputs.ref }} docker://$dest_image && 
                 log_sum "$dest_image"
             done
