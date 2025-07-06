@@ -473,27 +473,14 @@ jobs:
           attempt_limit: 3
           attempt_delay: 15000
           command: |
-            set -eo pipefail
-
             log_sum() { echo "$1" >> $GITHUB_STEP_SUMMARY; }
             log_sum '# Push to ACR result'
             log_sum '```'
-            
-            echo "Attempting to log in to $ACR_REGISTRY"
             echo "$ACR_PASSWORD" | sudo podman login "$ACR_REGISTRY" -u "$ACR_USERNAME" --password-stdin
-            echo "Login to ACR successful."
-
-            for tag_item in ${{ steps.generate-tags.outputs.alias_tags }}; do
-              SOURCE_IMAGE="docker://${{ steps.registry_case.outputs.lowercase }}/${{ env.IMAGE_NAME }}:$tag_item"
-              TARGET_IMAGE="docker://$ACR_REGISTRY/$ACR_NAMESPACE/${{ env.IMAGE_NAME }}:$tag_item"
-              
-              echo "Copying $SOURCE_IMAGE to $TARGET_IMAGE"
-              if sudo skopeo copy "$SOURCE_IMAGE" "$TARGET_IMAGE"; then
-                log_sum "Successfully copied $TARGET_IMAGE"
-              else
-                log_sum "Failed to copy $SOURCE_IMAGE to $TARGET_IMAGE"
-                exit 1
-              fi
+            for tag in ${{ steps.generate-tags.outputs.alias_tags }}; do
+              dest_image="docker://$ACR_REGISTRY/$ACR_NAMESPACE/${{ env.IMAGE_NAME }}:$tag"
+              sudo skopeo copy ${{ steps.rechunk.outputs.ref }} docker://$dest_image && 
+                log_sum "$dest_image"
             done
             log_sum '```'
 
