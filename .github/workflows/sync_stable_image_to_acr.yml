@@ -1,4 +1,4 @@
-name: Build ISOs
+name: Sync Stable Image to ACR
 
 on:
   workflow_dispatch:
