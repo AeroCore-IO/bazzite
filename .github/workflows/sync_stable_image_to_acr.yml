@@ -1,0 +1,82 @@
+name: Build ISOs
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  PULL_IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  IMAGE_REGISTRY: registry.cn-hangzhou.aliyuncs.com/aerocore
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}-iso
+  cancel-in-progress: true
+
+jobs:
+  build-iso:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        image_name:
+          - bazzite
+          - bazzite-nvidia
+          - bazzite-nvidia-open
+          - bazzite-gnome
+          - bazzite-gnome-nvidia
+          - bazzite-gnome-nvidia-open
+          - bazzite-deck
+          - bazzite-deck-gnome
+          - bazzite-ally
+          - bazzite-ally-gnome
+          - bazzite-asus
+          - bazzite-gnome-asus
+          - bazzite-asus-nvidia
+          - bazzite-gnome-asus-nvidia
+          - bazzite-asus-nvidia-open
+          - bazzite-gnome-asus-nvidia-open
+          - bazzite-surface
+          - bazzite-gnome-surface
+          - bazzite-surface-nvidia-open
+          - bazzite-gnome-surface-nvidia-open
+          - bazzite-deck-nvidia
+          - bazzite-deck-nvidia-gnome
+        major_version: [42]
+
+    steps:
+      - name: Install skopeo and jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y skopeo jq
+
+      - name: Get list of tags from GHCR
+        id: list-tags
+        run: |
+          IMAGE="${{ env.PULL_IMAGE_REGISTRY }}/${{ matrix.image_name }}"
+          echo "Fetching tags from $IMAGE"
+          TAGS=$(skopeo list-tags --creds "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" docker://$IMAGE | jq -r '.Tags[]')
+          echo "tags<<EOF" >> $GITHUB_OUTPUT
+          echo "$TAGS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Sync stable tag to ACR
+        run: |
+          IMAGE_NAME=${{ matrix.image_name }}
+          SOURCE=docker://${{ env.PULL_IMAGE_REGISTRY }}/$IMAGE_NAME:stable
+          TARGET=docker://${{ env.IMAGE_REGISTRY }}/$IMAGE_NAME:stable
+
+          echo "Syncing $SOURCE -> $TARGET"
+
+          if skopeo inspect --creds "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" "$SOURCE" > /dev/null 2>&1; then
+            skopeo copy --all \
+              --src-creds "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
+              --dest-creds "${{ secrets.ACR_USERNAME }}:${{ secrets.ACR_PASSWORD }}" \
+              "$SOURCE" "$TARGET"
+            echo "✅ Synced $IMAGE_NAME:stable"
+          else
+            echo "⚠️  $IMAGE_NAME:stable not found, skipping"
+          fi
+
