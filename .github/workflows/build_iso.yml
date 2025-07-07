@@ -5,7 +5,7 @@ on:
   workflow_call:
 
 env:
-  IMAGE_REGISTRY: registry.cn-guangzhou.aliyuncs.com/aerocore
+  IMAGE_REGISTRY: registry.cn-hangzhou.aliyuncs.com/aerocore
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}-iso
@@ -92,6 +92,9 @@ jobs:
       - name: Determine Flatpak Dependencies
         id: flatpak_dependencies
         shell: bash
+        env:
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
         run: |
           set -ex
           image="${{ steps.registry_case.outputs.lowercase }}/${{ matrix.image_name }}:${{ steps.generate-tag.outputs.tag }}"
@@ -111,6 +114,8 @@ jobs:
           flatpak install --system -y ${FLATPAK_REFS_DIR_LIST}
           ostree refs --repo=\${FLATPAK_SYSTEM_DIR}/repo | grep '^deploy/' | grep -v 'org\.freedesktop\.Platform\.openh264' | sed 's/^deploy\///g' > /output/flatpaks_with_deps
           EOF
+          # login to registry
+          echo "$ACR_PASSWORD" | sudo docker login "${{ steps.registry_case.outputs.lowercase }}" -u "$ACR_USERNAME" --password-stdinn
           docker run --rm --privileged \
             --entrypoint bash \
             -e FLATPAK_SYSTEM_DIR=/flatpak/flatpak \
