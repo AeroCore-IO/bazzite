@@ -533,7 +533,8 @@ RUN --mount=type=cache,dst=/var/cache \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=tmpfs,dst=/tmp \
     git clone --depth=1 https://github.com/SteamDeckHomebrew/decky-installer.git /tmp/decky-installer && \
-    install -D /tmp/decky-installer/cli/install_release.sh /usr/local/share/decky/install_release.sh && \
+    mkdir -p /usr/local/share/decky && \
+    cp /tmp/decky-installer/cli/install_release.sh /usr/local/share/decky && \
     chmod +x /usr/local/share/decky/install_release.sh && \
     rm -rf /tmp/decky-installer
 
