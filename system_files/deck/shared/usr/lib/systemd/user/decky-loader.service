@@ -1,0 +1,13 @@
+[Unit]
+Description=Install or update Decky Loader for current user
+After=gamescope-session.target
+PartOf=gamescope-session.target
+ConditionUser=!@system
+
+[Service]
+Type=oneshot
+ExecStart=/usr/share/decky-installer/decky-updater.sh
+
+[Install]
+WantedBy=gamescope-session.target
+

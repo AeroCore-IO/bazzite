@@ -804,6 +804,12 @@ RUN --mount=type=cache,dst=/var/cache \
         gamescope-session-steam && \
     /ctx/cleanup
 
+# Enable Decky Loader auto-installer for all users
+RUN chmod +x /usr/share/decky-installer/*.sh \
+    && mkdir -p /etc/systemd/user/gamescope-session.target.wants \
+    && ln -s /usr/lib/systemd/user/decky-loader.service \
+              /etc/systemd/user/gamescope-session.target.wants/decky-loader.service
+
 # Cleanup & Finalize
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \
