@@ -1,4 +1,4 @@
-name: Test Build Bazzite
+name: Build Bazzite
 on:
   schedule:
     - cron: "40 4 * * 1" # 4:40 utc monday
@@ -71,7 +71,7 @@ jobs:
             is_latest_version: true
             is_stable_version: true
             kernel_flavor: bazzite # must match a kernel_flavor from akmods repo
-            kernel_version: 6.15.9-106.bazzite.fc42.x86_64 # must match a cached version of the above flavor
+            kernel_version: 6.16.4-102.bazzite.fc42.x86_64 # must match a cached version of the above flavor
     steps:
       - name: Mount BTRFS for podman storage
         uses: ublue-os/container-storage-action@main
@@ -156,7 +156,7 @@ jobs:
 
       # Checkout push-to-registry action GitHub repository
       - name: Checkout Push to Registry action
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
 
       # Prepare offline documentation
       - name: Download offline docs
@@ -205,7 +205,7 @@ jobs:
               exit 1
             fi
             echo "SOURCE_IMAGE_VERSION=$ver" >> $GITHUB_ENV
-      
+
       # Generate a primary version key that appears
       # in KDE, rpm-ostree status, and github.
       - name: Generate Version
@@ -271,7 +271,7 @@ jobs:
             --build-arg-file build_args.txt \
             --secret "id=GITHUB_TOKEN,env=GITHUB_TOKEN" \
             --tag raw-img .
-      
+
       - name: Remove auxiliary images
         # We are tight on space, need at least 2x for OSTree
         run: |
@@ -286,7 +286,7 @@ jobs:
         uses: ASzc/change-string-case-action@d0603cd0a7dd490be678164909f65c7737470a7f # v6
         with:
           string: ${{ env.PUSH_IMAGE_REGISTRY }}
-      
+
       # Generate the previous image reference used by the Rechunker
       - name: Generate previous reference
         id: generate-prev-ref
@@ -345,7 +345,7 @@ jobs:
             org.opencontainers.image.url=https://bazzite.gg
             org.universal-blue.pkg.kernel=<relver:kernel>
             org.universal-blue.pkg.gamescope=<relver:gamescope>
-      
+
       # Generate tags after rechunker runs and checks the primary tag is not duplicated
       # If it is, rechunk will suffix it by .1, .2, etc and put it in steps.rechunk.outputs.version
       - name: Generate tags
