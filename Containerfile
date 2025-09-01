@@ -70,7 +70,11 @@ ARG SHA_HEAD_SHORT="${SHA_HEAD_SHORT}"
 ARG VERSION_TAG="${VERSION_TAG}"
 ARG VERSION_PRETTY="${VERSION_PRETTY}"
 
-COPY system_files/desktop/shared system_files/desktop/${BASE_IMAGE_NAME} /
+COPY system_files/shared / \
+     system_files/desktop/shared system_files/desktop/${BASE_IMAGE_NAME} /
+
+# Ensure Decky Installer scripts are executable for all variants
+RUN chmod +x /usr/share/decky-installer/*.sh || true
 
 # Setup Copr repos
 RUN --mount=type=cache,dst=/var/cache \
@@ -815,8 +819,9 @@ RUN --mount=type=cache,dst=/var/cache \
     /ctx/cleanup
 
 # Enable Decky Loader auto-installer for all users
-RUN chmod +x /usr/share/decky-installer/*.sh \
-    && mkdir -p /etc/systemd/user/gamescope-session.target.wants \
+RUN echo "==> Enable Decky Loader auto-installer" && \
+    echo "::notice title=Containerfile::Enable Decky Loader auto-installer" && \
+    mkdir -p /etc/systemd/user/gamescope-session.target.wants \
     && ln -s /usr/lib/systemd/user/decky-loader.service \
               /etc/systemd/user/gamescope-session.target.wants/decky-loader.service
 
