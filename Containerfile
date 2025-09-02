@@ -821,8 +821,8 @@ RUN --mount=type=cache,dst=/var/cache \
 # Enable Decky Loader auto-installer for all users
 RUN echo "==> Enable Decky Loader auto-installer" && \
     echo "::notice title=Containerfile::Enable Decky Loader auto-installer" && \
-    mkdir -p /etc/systemd/user/gamescope-session.target.wants \
-    && ln -s /usr/lib/systemd/user/decky-loader.service \
+    mkdir -p /etc/systemd/user/gamescope-session.target.wants && \
+    ln -s /usr/lib/systemd/user/decky-loader.service \
               /etc/systemd/user/gamescope-session.target.wants/decky-loader.service
 
 # Cleanup & Finalize
