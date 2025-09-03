@@ -552,6 +552,13 @@ RUN --mount=type=cache,dst=/var/cache \
     { systemctl enable ublue-os-media-automount.service || true; } && \
     /ctx/cleanup
 
+# Enable Decky Loader auto-installer for all users
+RUN echo "==> Enable Decky Loader auto-installer" && \
+    echo "::notice title=Containerfile::Enable Decky Loader auto-installer" && \
+    mkdir -p /etc/systemd/user/gamescope-session.target.wants && \
+    ln -s /usr/lib/systemd/user/decky-loader.service \
+              /etc/systemd/user/gamescope-session.target.wants/decky-loader.service
+
 # Cleanup & Finalize
 COPY system_files/overrides /
 RUN --mount=type=cache,dst=/var/cache \
@@ -817,13 +824,6 @@ RUN --mount=type=cache,dst=/var/cache \
         gamescope-session-plus \
         gamescope-session-steam && \
     /ctx/cleanup
-
-# Enable Decky Loader auto-installer for all users
-RUN echo "==> Enable Decky Loader auto-installer" && \
-    echo "::notice title=Containerfile::Enable Decky Loader auto-installer" && \
-    mkdir -p /etc/systemd/user/gamescope-session.target.wants && \
-    ln -s /usr/lib/systemd/user/decky-loader.service \
-              /etc/systemd/user/gamescope-session.target.wants/decky-loader.service
 
 # Cleanup & Finalize
 RUN --mount=type=cache,dst=/var/cache \
