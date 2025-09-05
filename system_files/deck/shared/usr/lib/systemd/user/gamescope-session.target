@@ -1,0 +1,6 @@
+[Unit]
+Description=Gamescope session
+Documentation=man:systemd.special(7)
+Requires=basic.target
+After=basic.target
+StopWhenUnneeded=yes
