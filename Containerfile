@@ -74,7 +74,17 @@ COPY system_files/shared / \
      system_files/desktop/shared system_files/desktop/${BASE_IMAGE_NAME} /
 
 # Ensure Decky Installer scripts are executable for all variants
-RUN chmod +x /usr/share/decky-installer/*.sh || true
+RUN echo "==> Setting up Decky Installer scripts" && \
+    if [ -d /usr/share/decky-installer ]; then \
+        echo "Found decky-installer directory, making scripts executable" && \
+        chmod +x /usr/share/decky-installer/*.sh && \
+        ls -la /usr/share/decky-installer/ && \
+        echo "Decky installer scripts setup complete"; \
+    else \
+        echo "WARNING: decky-installer directory not found at /usr/share/decky-installer" && \
+        echo "Listing contents of /usr/share/:" && \
+        find /usr/share -maxdepth 2 -name "*decky*" -type d; \
+    fi
 
 # Setup Copr repos
 RUN --mount=type=cache,dst=/var/cache \
@@ -555,9 +565,20 @@ RUN --mount=type=cache,dst=/var/cache \
 # Enable Decky Loader auto-installer for all users
 RUN echo "==> Enable Decky Loader auto-installer" && \
     echo "::notice title=Containerfile::Enable Decky Loader auto-installer" && \
-    mkdir -p /etc/systemd/user/gamescope-session.target.wants && \
-    ln -s /usr/lib/systemd/user/decky-loader.service \
-              /etc/systemd/user/gamescope-session.target.wants/decky-loader.service
+    if [ -f /usr/lib/systemd/user/decky-loader.service ]; then \
+        echo "Found decky-loader.service, creating symlink to enable service" && \
+        mkdir -p /etc/systemd/user/gamescope-session.target.wants && \
+        ln -s /usr/lib/systemd/user/decky-loader.service \
+                  /etc/systemd/user/gamescope-session.target.wants/decky-loader.service && \
+        echo "Successfully enabled decky-loader.service" && \
+        ls -la /usr/lib/systemd/user/decky-loader.service && \
+        ls -la /etc/systemd/user/gamescope-session.target.wants/decky-loader.service; \
+    else \
+        echo "ERROR: decky-loader.service not found at /usr/lib/systemd/user/decky-loader.service" && \
+        echo "Listing contents of /usr/lib/systemd/user/:" && \
+        ls -la /usr/lib/systemd/user/ && \
+        exit 1; \
+    fi
 
 # Cleanup & Finalize
 COPY system_files/overrides /
