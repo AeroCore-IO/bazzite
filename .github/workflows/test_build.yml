@@ -471,6 +471,31 @@ jobs:
             done
             log_sum '```'
 
+      - name: Log ACR Image Digests
+        if: |
+          github.event_name != 'pull_request' &&
+          vars.ACR_REGISTRY != '' &&
+          vars.ACR_NAMESPACE != '' &&
+          steps.push_acr.outcome == 'success'
+        env:
+          ACR_REGISTRY: ${{ vars.ACR_REGISTRY }}
+          ACR_NAMESPACE: ${{ vars.ACR_NAMESPACE }}
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+        run: |
+          log_sum() { echo "$1" >> $GITHUB_STEP_SUMMARY; }
+          log_sum '# ACR Image Digests (Write Operation)'
+          log_sum '```'
+          echo "$ACR_PASSWORD" | sudo podman login "$ACR_REGISTRY" -u "$ACR_USERNAME" --password-stdin
+          for tag in ${{ steps.generate-tags.outputs.alias_tags }}; do
+            dest_image="$ACR_REGISTRY/$ACR_NAMESPACE/${{ env.IMAGE_NAME }}:$tag"
+            digest=$(sudo skopeo inspect --format '{{.Digest}}' docker://$dest_image 2>/dev/null || echo "Failed to get digest")
+            log_sum "Image: $dest_image"
+            log_sum "Digest: $digest"
+            log_sum ""
+          done
+          log_sum '```'
+
   generate_release:
     name: Generate Release
     needs: [push-ghcr]
