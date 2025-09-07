@@ -1,0 +1,78 @@
+#!/bin/bash
+# Test script to validate decky-loader.service setup
+# This script tests the file copying and service enablement logic
+
+set -e
+
+echo "==> Testing decky-loader.service setup logic"
+
+# Create test environment
+TEST_ROOT="/tmp/bazzite-decky-test"
+rm -rf "$TEST_ROOT"
+mkdir -p "$TEST_ROOT"
+
+echo "==> Copying system files (simulating Containerfile COPY operations)"
+
+# Get the project root
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+
+# Copy shared files (first COPY in Containerfile)
+rsync -av "$PROJECT_ROOT/system_files/shared/" "$TEST_ROOT/"
+
+# Copy desktop shared files (second part of first COPY)
+rsync -av "$PROJECT_ROOT/system_files/desktop/shared/" "$TEST_ROOT/"
+
+echo "==> Testing decky-installer script setup"
+cd "$TEST_ROOT"
+
+# Test decky-installer setup logic
+if [ -d usr/share/decky-installer ]; then
+    echo "✓ Found decky-installer directory, making scripts executable"
+    chmod +x usr/share/decky-installer/*.sh
+    ls -la usr/share/decky-installer/
+    echo "✓ Decky installer scripts setup complete"
+else
+    echo "✗ WARNING: decky-installer directory not found at usr/share/decky-installer"
+    echo "Listing contents of usr/share/:"
+    find usr/share -maxdepth 2 -name "*decky*" -type d
+    exit 1
+fi
+
+echo "==> Testing decky-loader.service enablement"
+
+# Test service enablement logic
+if [ -f usr/lib/systemd/user/decky-loader.service ]; then
+    echo "✓ Found decky-loader.service, creating symlink to enable service"
+    mkdir -p etc/systemd/user/gamescope-session.target.wants
+    ln -s /usr/lib/systemd/user/decky-loader.service \
+              etc/systemd/user/gamescope-session.target.wants/decky-loader.service
+    echo "✓ Successfully enabled decky-loader.service"
+    echo "Service file:"
+    ls -la usr/lib/systemd/user/decky-loader.service
+    echo "Enablement symlink:"
+    ls -la etc/systemd/user/gamescope-session.target.wants/decky-loader.service
+else
+    echo "✗ ERROR: decky-loader.service not found at usr/lib/systemd/user/decky-loader.service"
+    echo "Listing contents of usr/lib/systemd/user/:"
+    ls -la usr/lib/systemd/user/
+    exit 1
+fi
+
+echo "==> Testing deck variant (simulating deck COPY)"
+# Copy deck files (simulating deck build stage)
+rsync -av "$PROJECT_ROOT/system_files/deck/shared/" "$TEST_ROOT/"
+
+# Verify decky-loader.service still exists after deck copy
+if [ -f usr/lib/systemd/user/decky-loader.service ]; then
+    echo "✓ decky-loader.service still present after deck files copy"
+else
+    echo "✗ ERROR: decky-loader.service missing after deck files copy"
+    exit 1
+fi
+
+echo "==> All tests passed! ✓"
+echo "The decky-loader.service setup should work correctly in the build."
+
+# Cleanup
+rm -rf "$TEST_ROOT"
+echo "==> Cleanup completed"
