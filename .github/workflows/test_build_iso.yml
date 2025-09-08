@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   workflow_call:
 
+env:
+  IMAGE_REGISTRY: ${{ vars.ACR_REGISTRY }}/{{ vars.ACR_NAMESPACE }}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}-iso
   cancel-in-progress: true
@@ -62,7 +65,7 @@ jobs:
         id: registry_case
         uses: ASzc/change-string-case-action@d0603cd0a7dd490be678164909f65c7737470a7f # v6
         with:
-          string: ${{ vars.IMAGE_REGISTRY }}/${{ vars.ACR_NAMESPACE }}
+          string: ${{ env.IMAGE_REGISTRY }}
 
       - name: Log ACR Image Digest
         shell: bash
