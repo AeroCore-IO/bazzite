@@ -140,6 +140,11 @@ jobs:
       - name: Display ISO Checksum
         shell: bash
         run: |
+          echo "# ISO Checksum (SHA256)" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "ISO: ${{ steps.build.outputs.iso_name }}" >> $GITHUB_STEP_SUMMARY
+          cat ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
           cat ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM
 
       - name: Move ISOs to Upload Directory
