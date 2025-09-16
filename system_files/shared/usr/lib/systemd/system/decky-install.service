@@ -1,0 +1,14 @@
+[Unit]
+Description=Install or update Decky Loader on first boot
+Wants=network-online.target
+After=network-online.target
+ConditionFirstBoot=yes
+
+[Service]
+Type=oneshot
+Environment=DECKY_INSTALL_MODE=stable
+Environment=DECKY_INSTALL_MARKER_PATH=/var/lib/decky-installed
+ExecStart=/usr/share/decky-installer/decky-updater.sh
+
+[Install]
+WantedBy=multi-user.target
