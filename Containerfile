@@ -73,19 +73,6 @@ ARG VERSION_PRETTY="${VERSION_PRETTY}"
 COPY system_files/shared / \
      system_files/desktop/shared system_files/desktop/${BASE_IMAGE_NAME} /
 
-# Ensure Decky Installer scripts are executable for all variants
-RUN echo "==> Setting up Decky Installer scripts" && \
-    if [ -d /usr/share/decky-installer ]; then \
-        echo "Found decky-installer directory, making scripts executable" && \
-        chmod +x /usr/share/decky-installer/*.sh && \
-        ls -la /usr/share/decky-installer/ && \
-        echo "Decky installer scripts setup complete"; \
-    else \
-        echo "WARNING: decky-installer directory not found at /usr/share/decky-installer" && \
-        echo "Listing contents of /usr/share/:" && \
-        find /usr/share -maxdepth 2 -name "*decky*" -type d; \
-    fi
-
 # Setup Copr repos
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \
