@@ -4,37 +4,124 @@
 [group("gaming")]
 setup-decky ACTION="":
     #!/usr/bin/bash
-    if [[ $(id -u) -eq 0 ]]; then
+    if [[ $(id -u) -eq 0 && -z "${DECKY_ALLOW_ROOT:-}" ]]; then
         echo >&2 "ERROR: Do not run this with sudo"
         exit 1
     fi
     source /usr/lib/ujust/ujust.sh
+    if [[ -z "${MIRROR_HOST:-}" && -r /etc/bazzite-decky-mirror.conf ]]; then
+      # shellcheck disable=SC1091
+      source /etc/bazzite-decky-mirror.conf
+    fi
     DECKY_STATE="${b}${red}Not Installed${n}"
     if [[ -f /etc/systemd/system/multi-user.target.wants/plugin_loader.service ]]; then
       DECKY_STATE="${b}${green}Installed${n}"
     fi
+    decky_repo_base() {
+      printf 'https://%s/SteamDeckHomebrew' "${MIRROR_HOST:-github.com}"
+    }
+
+    mirror_decky_urls() {
+      local repo_base
+      repo_base=$(decky_repo_base)
+      if [ "${MIRROR_HOST:-github.com}" = "github.com" ]; then
+        sed -e "s|https://github.com/SteamDeckHomebrew|${repo_base}|g"
+      else
+        sed -e "s|https://github.com/SteamDeckHomebrew|${repo_base}|g" \
+            -e "s|${repo_base}/decky-loader/archive/refs/tags/\\([^\"']*\\)\\.tar\\.gz|${repo_base}/decky-loader/snapshot/decky-loader-\\1.tar.gz|g"
+      fi
+    }
+
+    resolve_target_user() {
+      if [[ -n "${DECKY_INSTALL_USER:-}" ]]; then
+        printf '%s' "${DECKY_INSTALL_USER}"
+        return 0
+      fi
+      if id deck &>/dev/null; then
+        printf 'deck'
+        return 0
+      fi
+      local candidate
+      candidate=$(awk -F: '($3 >= 1000 && $3 < 60000) { print $1; exit }' /etc/passwd)
+      if [[ -n "$candidate" ]]; then
+        printf '%s' "$candidate"
+        return 0
+      fi
+      printf '%s' "${SUDO_USER:-$USER}"
+    }
+
+    resolve_target_home() {
+      if [[ -n "${DECKY_INSTALL_HOME:-}" ]]; then
+        printf '%s' "${DECKY_INSTALL_HOME}"
+        return 0
+      fi
+      local target_user
+      target_user=$(resolve_target_user)
+      if [[ -n "$target_user" ]]; then
+        getent passwd "$target_user" | cut -d: -f6
+      fi
+    }
+
+    run_privileged() {
+      if [[ $(id -u) -eq 0 ]]; then
+        "$@"
+      else
+        sudo -A "$@"
+      fi
+    }
+
     install_release() {
-      export HOME=$(getent passwd ${SUDO_USER:-$USER} | cut -d: -f6)
+      local target_home
+      target_home=$(resolve_target_home)
+      if [[ -z "$target_home" ]]; then
+        echo "Unable to determine the Decky target home directory" >&2
+        exit 1
+      fi
+      export HOME="$target_home"
       if [ ! -L "/home/deck" ] && [ ! -e "/home/deck" ]  && [ "$HOME" != "/home/deck" ]; then
         echo "Making a /home/deck symlink to fix plugins that do not use environment variables."
-        sudo -A ln -sf "$HOME" /home/deck
+        run_privileged ln -sf "$HOME" /home/deck
       fi
-      curl -L https://github.com/SteamDeckHomebrew/decky-installer/releases/latest/download/install_release.sh |
-        sed 's|sudo|sudo -A |g' | sh
-      sudo -A chcon -R -t bin_t $HOME/homebrew/services/PluginLoader
+      local repo_base
+      repo_base=$(decky_repo_base)
+      local sudo_replacement="sudo -A "
+      if [[ $(id -u) -eq 0 ]]; then
+        sudo_replacement="sudo "
+      fi
+      curl -L "${repo_base}/decky-installer/releases/latest/download/install_release.sh" |
+        mirror_decky_urls |
+        sed "s|sudo |${sudo_replacement}|g" | sh
+      run_privileged chcon -R -t bin_t "$HOME/homebrew/services/PluginLoader"
     }
     install_prerelease() {
-      export HOME=$(getent passwd ${SUDO_USER:-$USER} | cut -d: -f6)
+      local target_home
+      target_home=$(resolve_target_home)
+      if [[ -z "$target_home" ]]; then
+        echo "Unable to determine the Decky target home directory" >&2
+        exit 1
+      fi
+      export HOME="$target_home"
       if [ ! -L "/home/deck" ] && [ ! -e "/home/deck" ]  && [ "$HOME" != "/home/deck" ]; then
         echo "Making a /home/deck symlink to fix plugins that do not use environment variables."
-        sudo -A ln -sf "$HOME" /home/deck
+        run_privileged ln -sf "$HOME" /home/deck
       fi
-      curl -L https://github.com/SteamDeckHomebrew/decky-installer/releases/latest/download/install_prerelease.sh | sh
-      sudo -A chcon -R -t bin_t $HOME/homebrew/services/PluginLoader
+      local repo_base
+      repo_base=$(decky_repo_base)
+      local sudo_replacement="sudo -A "
+      if [[ $(id -u) -eq 0 ]]; then
+        sudo_replacement="sudo "
+      fi
+      curl -L "${repo_base}/decky-installer/releases/latest/download/install_prerelease.sh" |
+        mirror_decky_urls |
+        sed "s|sudo |${sudo_replacement}|g" | sh
+      run_privileged chcon -R -t bin_t "$HOME/homebrew/services/PluginLoader"
     }
     uninstall() {
       echo "Uninstalling Decky Loader..."
-      curl -L https://github.com/SteamDeckHomebrew/decky-installer/releases/latest/download/uninstall.sh | sh
+      local repo_base
+      repo_base=$(decky_repo_base)
+      curl -L "${repo_base}/decky-installer/releases/latest/download/uninstall.sh" |
+        mirror_decky_urls | sh
       echo "Decky Loader has been uninstalled."
     }
     OPTION={{ ACTION }}
