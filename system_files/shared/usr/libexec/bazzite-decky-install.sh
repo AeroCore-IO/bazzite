@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -z "${MIRROR_HOST:-}" && -r /etc/bazzite-decky-mirror.conf ]]; then
+  # shellcheck disable=SC1091
+  source /etc/bazzite-decky-mirror.conf
+fi
+
+mark_success() {
+  [[ -n "${DECKY_INSTALL_MARKER_PATH:-}" ]] || return 0
+  mkdir -p "$(dirname "${DECKY_INSTALL_MARKER_PATH}")"
+  touch "${DECKY_INSTALL_MARKER_PATH}"
+}
+
+clear_marker() {
+  [[ -n "${DECKY_INSTALL_MARKER_PATH:-}" ]] || return 0
+  rm -f "${DECKY_INSTALL_MARKER_PATH}"
+}
+
+action="install"
+case "${DECKY_INSTALL_MODE:-stable}" in
+  stable)
+    action="install"
+    ;;
+  prerelease)
+    action="prerelease"
+    ;;
+  uninstall)
+    action="uninstall"
+    ;;
+  *)
+    echo "Unknown DECKY_INSTALL_MODE: ${DECKY_INSTALL_MODE}" >&2
+    exit 1
+    ;;
+esac
+
+if /usr/bin/ujust setup-decky "${action}"; then
+  case "${action}" in
+    install|prerelease)
+      mark_success
+      ;;
+    uninstall)
+      clear_marker
+      ;;
+  esac
+else
+  exit 1
+fi

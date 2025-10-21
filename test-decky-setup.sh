@@ -24,11 +24,18 @@ rsync -av "$PROJECT_ROOT/system_files/desktop/shared/" "$TEST_ROOT/"
 
 cd "$TEST_ROOT"
 
-echo "==> Verifying decky-install.service uses ujust wrapper"
-if grep -q "ujust setup-decky" usr/lib/systemd/system/decky-install.service; then
-    echo "✓ decky-install.service invokes ujust setup-decky"
+echo "==> Verifying decky-install.service uses Decky wrapper script"
+if grep -q "ExecStart=/usr/libexec/bazzite-decky-install.sh" usr/lib/systemd/system/decky-install.service; then
+    echo "✓ decky-install.service invokes bazzite-decky-install wrapper"
 else
-    echo "✗ ERROR: decky-install.service is not configured to use ujust"
+    echo "✗ ERROR: decky-install.service is not configured to use the wrapper"
+    exit 1
+fi
+
+if [ -x usr/libexec/bazzite-decky-install.sh ]; then
+    echo "✓ Wrapper script is present and executable"
+else
+    echo "✗ ERROR: Wrapper script missing or not executable"
     exit 1
 fi
 
