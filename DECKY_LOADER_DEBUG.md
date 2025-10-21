@@ -17,12 +17,6 @@ Verify the symlink for service enablement exists:
 podman run --rm -it localhost/your-image:tag ls -la /etc/systemd/system/multi-user.target.wants/decky-install.service
 ```
 
-### 3. Check Decky Installer Scripts
-Verify the installer scripts are present and executable:
-```bash
-podman run --rm -it localhost/your-image:tag ls -la /usr/share/decky-installer/
-```
-
 ## Build Process Enhancements
 
 The following enhancements were added to make the build process more robust:
@@ -36,19 +30,14 @@ The following enhancements were added to make the build process more robust:
 - Directory listings for debugging
 - Clear indication of what step failed
 
-### 3. Improved Script Setup
-- Verification that decky-installer directory exists
-- Better error handling for script permission setup
+### 3. Inline installer execution
+- `decky-install.service` now runs the upstream Decky installer scripts directly
+  via `curl` instead of relying on pre-copied helper files.
 
 ## Expected Build Output
 
 With the enhanced error checking, you should see output like:
 ```
-==> Setting up Decky Installer scripts
-Found decky-installer directory, making scripts executable
-[listing of executable scripts]
-Decky installer scripts setup complete
-
 ==> Configure Decky Loader installation service
 Found decky-install.service, presetting service
 Successfully processed decky-install.service preset
@@ -62,7 +51,6 @@ If the build fails with Decky installation errors:
 1. **Check source files exist:**
    ```bash
    ls -la system_files/shared/usr/lib/systemd/system/decky-install.service
-   ls -la system_files/shared/usr/share/decky-installer/
    ```
 
 2. **Verify file copying worked:**
@@ -73,4 +61,4 @@ If the build fails with Decky installation errors:
 
 ## Files Modified
 - `Containerfile`: Added error checking and debugging output
-- Enhanced both decky-installer script setup and service preset sections
+- Updated decky-install.service to inline upstream installer execution
