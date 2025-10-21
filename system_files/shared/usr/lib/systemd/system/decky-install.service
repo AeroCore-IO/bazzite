@@ -8,7 +8,9 @@ ConditionFirstBoot=yes
 Type=oneshot
 Environment=DECKY_INSTALL_MODE=stable
 Environment=DECKY_INSTALL_MARKER_PATH=/var/lib/decky-installed
-ExecStart=/usr/share/decky-installer/decky-updater.sh
+Environment=DECKY_ALLOW_ROOT=1
+Environment=DECKY_INSTALL_USER=deck
+ExecStart=/usr/libexec/bazzite-decky-install.sh
 
 [Install]
 WantedBy=multi-user.target
