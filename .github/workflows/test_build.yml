@@ -265,6 +265,10 @@ jobs:
           SHA_HEAD_SHORT=${{ env.SHA_HEAD_SHORT }}
           VERSION_TAG=${{ steps.generate-version.outputs.tag }}
           VERSION_PRETTY=${{ steps.generate-version.outputs.pretty }}
+          # Optional mirrors (empty = no change)
+          FLATPAK_MIRROR_URL=${{ vars.FLATPAK_MIRROR_URL }}
+          HOMEBREW_BOTTLE_DOMAIN=${{ vars.HOMEBREW_BOTTLE_DOMAIN }}
+          HOMEBREW_GIT_MIRROR_BASE=${{ vars.HOMEBREW_GIT_MIRROR_BASE }}
           EOF
 
       # Build image using buildah and save it to raw-img

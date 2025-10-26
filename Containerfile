@@ -42,6 +42,9 @@ ARG JUPITER_FIRMWARE_VERSION="${JUPITER_FIRMWARE_VERSION:-jupiter-20241205.1}"
 ARG SHA_HEAD_SHORT="${SHA_HEAD_SHORT}"
 ARG VERSION_TAG="${VERSION_TAG}"
 ARG VERSION_PRETTY="${VERSION_PRETTY}"
+ARG FLATPAK_MIRROR_URL
+ARG HOMEBREW_BOTTLE_DOMAIN
+ARG HOMEBREW_GIT_MIRROR_BASE
 
 FROM ghcr.io/ublue-os/akmods:${KERNEL_FLAVOR}-${FEDORA_VERSION}-${KERNEL_VERSION} AS akmods
 FROM ghcr.io/ublue-os/akmods-extra:${KERNEL_FLAVOR}-${FEDORA_VERSION}-${KERNEL_VERSION} AS akmods-extra
@@ -69,6 +72,9 @@ ARG JUPITER_FIRMWARE_VERSION="${JUPITER_FIRMWARE_VERSION:-jupiter-20241205.1}"
 ARG SHA_HEAD_SHORT="${SHA_HEAD_SHORT}"
 ARG VERSION_TAG="${VERSION_TAG}"
 ARG VERSION_PRETTY="${VERSION_PRETTY}"
+ARG FLATPAK_MIRROR_URL
+ARG HOMEBREW_BOTTLE_DOMAIN
+ARG HOMEBREW_GIT_MIRROR_BASE
 
 COPY system_files/shared / \
      system_files/desktop/shared system_files/desktop/${BASE_IMAGE_NAME} /
@@ -532,6 +538,16 @@ RUN --mount=type=cache,dst=/var/cache \
     --mount=type=secret,id=GITHUB_TOKEN \
     dnf5 install -y ublue-brew && \
     /ctx/ghcurl "https://raw.githubusercontent.com/ublue-os/bash-preexec/master/bash-preexec.sh" --retry 3 -Lo /usr/share/bash-prexec && \
+    if [ -n "${HOMEBREW_BOTTLE_DOMAIN}" ]; then \
+        echo "export HOMEBREW_BOTTLE_DOMAIN=\"${HOMEBREW_BOTTLE_DOMAIN}\"" > /etc/profile.d/homebrew-mirror.sh; \
+    fi && \
+    if [ -n "${HOMEBREW_GIT_MIRROR_BASE}" ]; then \
+        { \
+          echo "export HOMEBREW_BREW_GIT_REMOTE=\"${HOMEBREW_GIT_MIRROR_BASE%/}/brew.git\""; \
+          echo "export HOMEBREW_CORE_GIT_REMOTE=\"${HOMEBREW_GIT_MIRROR_BASE%/}/homebrew-core.git\""; \
+        } >> /etc/profile.d/homebrew-mirror.sh; \
+        chmod 0644 /etc/profile.d/homebrew-mirror.sh; \
+    fi && \
     /ctx/cleanup
 
 # ublue-os-media-automount-udev, mount non-removable device partitions automatically under /media/media-automount/
@@ -670,7 +686,11 @@ RUN --mount=type=cache,dst=/var/cache \
     sed -i 's/balanced=balanced-battery$/balanced=balanced-battery-bazzite\npower-saver=powersave-battery-bazzite/' /etc/tuned/ppd.conf && \
     ln -s /usr/bin/true /usr/bin/pulseaudio && \
     mkdir -p /etc/flatpak/remotes.d && \
-    curl --retry 3 -Lo /etc/flatpak/remotes.d/flathub.flatpakrepo https://dl.flathub.org/repo/flathub.flatpakrepo && \
+    if [ -n "${FLATPAK_MIRROR_URL}" ]; then \
+        curl --retry 3 -Lo /etc/flatpak/remotes.d/flathub.flatpakrepo "${FLATPAK_MIRROR_URL}"; \
+    else \
+        curl --retry 3 -Lo /etc/flatpak/remotes.d/flathub.flatpakrepo https://dl.flathub.org/repo/flathub.flatpakrepo; \
+    fi && \
     systemctl enable brew-setup.service && \
     systemctl disable brew-upgrade.timer && \
     systemctl disable brew-update.timer && \
