@@ -44,7 +44,7 @@ ARG VERSION_TAG="${VERSION_TAG}"
 ARG VERSION_PRETTY="${VERSION_PRETTY}"
 ARG FLATPAK_MIRROR_URL
 ARG HOMEBREW_BOTTLE_DOMAIN
-ARG HOMEBREW_GIT_MIRROR_BASE
+ARG HOMEBREW_API_DOMAIN
 
 FROM ghcr.io/ublue-os/akmods:${KERNEL_FLAVOR}-${FEDORA_VERSION}-${KERNEL_VERSION} AS akmods
 FROM ghcr.io/ublue-os/akmods-extra:${KERNEL_FLAVOR}-${FEDORA_VERSION}-${KERNEL_VERSION} AS akmods-extra
@@ -75,6 +75,7 @@ ARG VERSION_PRETTY="${VERSION_PRETTY}"
 ARG FLATPAK_MIRROR_URL
 ARG HOMEBREW_BOTTLE_DOMAIN
 ARG HOMEBREW_GIT_MIRROR_BASE
+ARG HOMEBREW_API_DOMAIN
 
 COPY system_files/shared / \
      system_files/desktop/shared system_files/desktop/${BASE_IMAGE_NAME} /
@@ -538,14 +539,15 @@ RUN --mount=type=cache,dst=/var/cache \
     --mount=type=secret,id=GITHUB_TOKEN \
     dnf5 install -y ublue-brew && \
     /ctx/ghcurl "https://raw.githubusercontent.com/ublue-os/bash-preexec/master/bash-preexec.sh" --retry 3 -Lo /usr/share/bash-prexec && \
-    if [ -n "${HOMEBREW_BOTTLE_DOMAIN}" ]; then \
-        echo "export HOMEBREW_BOTTLE_DOMAIN=\"${HOMEBREW_BOTTLE_DOMAIN}\"" > /etc/profile.d/homebrew-mirror.sh; \
-    fi && \
-    if [ -n "${HOMEBREW_GIT_MIRROR_BASE}" ]; then \
-        { \
-          echo "export HOMEBREW_BREW_GIT_REMOTE=\"${HOMEBREW_GIT_MIRROR_BASE%/}/brew.git\""; \
-          echo "export HOMEBREW_CORE_GIT_REMOTE=\"${HOMEBREW_GIT_MIRROR_BASE%/}/homebrew-core.git\""; \
-        } >> /etc/profile.d/homebrew-mirror.sh; \
+    if [ -n "${HOMEBREW_BOTTLE_DOMAIN}" ] || [ -n "${HOMEBREW_API_DOMAIN}" ]; then \
+        # Write defaults that users can override by pre-setting variables
+        : > /etc/profile.d/homebrew-mirror.sh; \
+        if [ -n "${HOMEBREW_BOTTLE_DOMAIN}" ]; then \
+          echo "export HOMEBREW_BOTTLE_DOMAIN=\"\${HOMEBREW_BOTTLE_DOMAIN:-${HOMEBREW_BOTTLE_DOMAIN}}\"" >> /etc/profile.d/homebrew-mirror.sh; \
+        fi; \
+        if [ -n "${HOMEBREW_API_DOMAIN}" ]; then \
+          echo "export HOMEBREW_API_DOMAIN=\"\${HOMEBREW_API_DOMAIN:-${HOMEBREW_API_DOMAIN}}\"" >> /etc/profile.d/homebrew-mirror.sh; \
+        fi; \
         chmod 0644 /etc/profile.d/homebrew-mirror.sh; \
     fi && \
     /ctx/cleanup
