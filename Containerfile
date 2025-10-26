@@ -77,8 +77,10 @@ ARG HOMEBREW_BOTTLE_DOMAIN
 ARG HOMEBREW_GIT_MIRROR_BASE
 ARG HOMEBREW_API_DOMAIN
 
-COPY system_files/shared / \
-     system_files/desktop/shared system_files/desktop/${BASE_IMAGE_NAME} /
+COPY system_files/shared \
+     system_files/desktop/shared \
+     system_files/desktop/${BASE_IMAGE_NAME} \
+     /
 
 # Setup Copr repos
 RUN --mount=type=cache,dst=/var/cache \
