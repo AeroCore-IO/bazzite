@@ -9,6 +9,7 @@ setup-decky ACTION="":
         exit 1
     fi
     source /usr/lib/ujust/ujust.sh
+    source /usr/lib/aerocore/decky-mirror.sh
     DECKY_STATE="${b}${red}Not Installed${n}"
     if [[ -f /etc/systemd/system/multi-user.target.wants/plugin_loader.service ]]; then
       DECKY_STATE="${b}${green}Installed${n}"
@@ -83,6 +84,7 @@ install-decky-plugins ACTION="":
     #!/bin/bash
     set -euo pipefail
     source /usr/lib/ujust/ujust.sh
+    source /usr/lib/aerocore/decky-mirror.sh
 
     # Plugin configuration - add new plugins here
     # Format: "owner|repo|plugin_name|filename"
@@ -91,6 +93,7 @@ install-decky-plugins ACTION="":
     PLUGINS["bazzite-buddy"]="bazzite-org|decky-bazzite-buddy|Bazzite Buddy|Bazzite.Buddy.zip"
     PLUGINS["decky-framegen"]="xXJSONDeruloXx|Decky-Framegen|Decky-Framegen|Decky-Framegen.zip"
     PLUGINS["decky-lsfg-vk"]="xXJSONDeruloXx|decky-lsfg-vk|decky-lsfg-vk|decky-lsfg-vk.zip"
+    PLUGINS["aerocore-accelerator"]="aerocore-io|decky-accelerator|气核加速器|aerocore-accelerator.zip"
 
     # Core plugin installation function
     install_plugin() {

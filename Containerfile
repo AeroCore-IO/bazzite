@@ -564,30 +564,6 @@ RUN --mount=type=cache,dst=/var/cache \
     { systemctl enable ublue-os-media-automount.service || true; } && \
     /ctx/cleanup
 
-# Configure Decky Loader installation service
-RUN echo "==> Configure Decky Loader installation service" && \
-    echo "::notice title=Containerfile::Preset Decky Loader installation service" && \
-    if [ -f /usr/lib/systemd/system/decky-install.service ]; then \
-        echo "Found decky-install.service, presetting service" && \
-        systemctl preset decky-install.service && \
-        echo "Successfully processed decky-install.service preset" && \
-        ls -la /usr/lib/systemd/system/decky-install.service && \
-        if [ -L /etc/systemd/system/multi-user.target.wants/decky-install.service ]; then \
-            echo "Service preset created multi-user.target.wants symlink" && \
-            ls -la /etc/systemd/system/multi-user.target.wants/decky-install.service; \
-        else \
-            echo "WARNING: decky-install.service preset did not create a symlink"; \
-        fi && \
-        mkdir -p /var/lib && \
-        touch /var/lib/decky-installed && \
-        echo "Created /var/lib/decky-installed marker"; \
-    else \
-        echo "ERROR: decky-install.service not found at /usr/lib/systemd/system/decky-install.service" && \
-        echo "Listing contents of /usr/lib/systemd/system/:" && \
-        ls -la /usr/lib/systemd/system/ && \
-        exit 1; \
-    fi
-
 # Cleanup & Finalize
 COPY system_files/overrides /
 RUN --mount=type=cache,dst=/var/cache \
