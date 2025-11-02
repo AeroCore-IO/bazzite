@@ -1,4 +1,4 @@
-name: Build Bazzite
+name: Test Build Bazzite
 on:
   pull_request:
     branches:
