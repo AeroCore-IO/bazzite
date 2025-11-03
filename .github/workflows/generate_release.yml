@@ -21,9 +21,14 @@ jobs:
 
       - name: Get target
         id: get-target
+        env:
+          OVERRIDE_TARGET: ${{ env.RELEASE_TARGET }}
         run: |
           TARGET="${{ github.event.inputs.target || github.ref }}"
           TARGET="${TARGET##*/}"
+          if [[ -n $OVERRIDE_TARGET ]]; then
+            TARGET="$OVERRIDE_TARGET"
+          fi
           if [ "$TARGET" = "main" ]; then
             TARGET="stable"
           fi
