@@ -1,5 +1,10 @@
 on:
   workflow_call:
+    inputs:
+      target:
+        description: "Override release target/branch"
+        required: false
+        type: string
   workflow_dispatch:
     inputs:
       handwritten:
