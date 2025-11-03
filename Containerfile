@@ -172,13 +172,13 @@ RUN --mount=type=cache,dst=/var/cache \
             libwacom-data libwacom-surface-data && \
         dnf5 versionlock add \
             libwacom-surface-data && \
-        dnf5 -y install \
+        ( dnf5 -y install \
             iptsd \
             libcamera \
             libcamera-tools \
             libcamera-gstreamer \
             libcamera-ipa \
-            pipewire-plugin-libcamera && \
+            pipewire-plugin-libcamera ) && \
         dnf5 -y config-manager setopt "linux-surface".enabled=0 \
     ; fi && \
     /ctx/install-firmware && \
@@ -374,9 +374,9 @@ RUN --mount=type=cache,dst=/var/cache \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=tmpfs,dst=/tmp \
     --mount=type=secret,id=GITHUB_TOKEN \
-    dnf5 -y swap \
+    ( dnf5 -y swap \
     --repo copr:copr.fedorainfracloud.org:bazzite-org:bazzite \
-        ibus ibus && \
+        ibus ibus ) && \
     dnf5 versionlock add \
         ibus && \
     dnf5 -y install \
