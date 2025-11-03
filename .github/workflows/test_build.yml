@@ -497,5 +497,5 @@ jobs:
     if: github.event_name != 'pull_request'
     secrets: inherit
     uses: ./.github/workflows/generate_release.yml
-    env:
-      RELEASE_TARGET: ${{ github.ref_name == 'bazzite-f42-base' && 'main' || '' }}
+    with:
+      target: ${{ github.ref_name == 'bazzite-f42-base' && 'main' || '' }}

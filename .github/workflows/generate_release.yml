@@ -22,7 +22,7 @@ jobs:
       - name: Get target
         id: get-target
         env:
-          OVERRIDE_TARGET: ${{ env.RELEASE_TARGET }}
+          OVERRIDE_TARGET: ${{ inputs.target || github.event.target }}
         run: |
           TARGET="${{ github.event.inputs.target || github.ref }}"
           TARGET="${TARGET##*/}"
