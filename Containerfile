@@ -172,13 +172,13 @@ RUN --mount=type=cache,dst=/var/cache \
             libwacom-data libwacom-surface-data && \
         dnf5 versionlock add \
             libwacom-surface-data && \
-        ( dnf5 -y install \
+        dnf5 -y install \
             iptsd \
             libcamera \
             libcamera-tools \
             libcamera-gstreamer \
             libcamera-ipa \
-            pipewire-plugin-libcamera ) && \
+            pipewire-plugin-libcamera && \
         dnf5 -y config-manager setopt "linux-surface".enabled=0 \
     ; fi && \
     /ctx/install-firmware && \
@@ -199,7 +199,9 @@ RUN --mount=type=cache,dst=/var/cache \
         ["copr:copr.fedorainfracloud.org:ublue-os:staging"]="fwupd" \
     ) && \
     for repo in "${!toswap[@]}"; do \
-        for package in ${toswap[$repo]}; do dnf5 -y swap --repo=$repo $package $package; done; \
+        for package in ${toswap[$repo]}; \
+          do dnf5 -y swap --repo=$repo $package $package || echo "${package} already installed, skip swap"; \
+        done; \
     done && unset -v toswap repo package && \
     dnf5 versionlock add \
         pipewire \
@@ -229,7 +231,8 @@ RUN --mount=type=cache,dst=/var/cache \
         fwupd \
         fwupd-plugin-flashrom \
         fwupd-plugin-modem-manager \
-        fwupd-plugin-uefi-capsule-data && \
+        fwupd-plugin-uefi-capsule-data \
+        || echo "surface extra packages already present, skip install" && \
     dnf5 -y install \
         mesa-va-drivers.i686 && \
     dnf5 -y install --enable-repo="*rpmfusion*" --disable-repo="*fedora-multimedia*" \
@@ -376,7 +379,7 @@ RUN --mount=type=cache,dst=/var/cache \
     --mount=type=secret,id=GITHUB_TOKEN \
     ( dnf5 -y swap \
     --repo copr:copr.fedorainfracloud.org:bazzite-org:bazzite \
-        ibus ibus ) && \
+        ibus ibus || echo "ibus already from copr, skip swap" ) && \
     dnf5 versionlock add \
         ibus && \
     dnf5 -y install \
