@@ -53,7 +53,7 @@ ARG SHA_HEAD_SHORT="${SHA_HEAD_SHORT}"
 ARG VERSION_TAG="${VERSION_TAG}"
 ARG VERSION_PRETTY="${VERSION_PRETTY}"
 
-COPY system_files/desktop/shared system_files/desktop/${BASE_IMAGE_NAME} /
+COPY system_files/shared system_files/desktop/shared system_files/desktop/${BASE_IMAGE_NAME} /
 COPY ./build_files/cleanup ./build_files/install-kernel ./build_files/ghcurl ./build_files/dnf5-setopt ./build_files/dnf5-search ./build_files/build-gnome-extensions /ctx/
 
 # Setup Copr repos
