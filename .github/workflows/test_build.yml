@@ -62,7 +62,7 @@ jobs:
       matrix:
         base_image_flavor: [main]
         base_name: [bazzite-deck]
-        base_image_name: [silverblue]
+        base_image_name: [kinoite, silverblue]
         target_image_flavor: [main]
         target_nvidia_flavor: [nvidia-open]
         fedora_version: [42]
