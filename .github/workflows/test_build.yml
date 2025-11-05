@@ -318,15 +318,16 @@ jobs:
 
             # Push unique image id and sign, this way once evergreen tag is published
             # It will always be signed
-            dest_image="${{ steps.base.outputs.output_image }}:${{ steps.rechunk.outputs.version }}"
+            repo_image="${{ steps.base.outputs.push_registry }}/${{ matrix.image }}"
+            dest_image="$repo_image:${{ steps.rechunk.outputs.version }}"
             sudo skopeo copy ${{ steps.rechunk.outputs.ref }} docker://$dest_image
             log_sum "$dest_image"
             DIGEST=$(sudo skopeo inspect --format '{{.Digest}}' ${{ steps.rechunk.outputs.ref }})
             cosign sign -y --key env://SIGNING_SECRET --new-bundle-format=false \
-              "${{ steps.base.outputs.output_image }}@$DIGEST"
+              "$repo_image@$DIGEST"
 
             for tag in ${{ steps.generate-tags.outputs.alias_tags }}; do
-              dest_image="${{ steps.base.outputs.output_image }}:$tag"
+              dest_image="$repo_image:$tag"
               sudo skopeo copy ${{ steps.rechunk.outputs.ref }} docker://$dest_image
               log_sum "$dest_image"
             done
