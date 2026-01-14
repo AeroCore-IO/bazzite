@@ -149,6 +149,16 @@ jobs:
           additional_templates: '/github/workspace/installer/lorax_templates/remove_root_password_prompt.tmpl /github/workspace/installer/lorax_templates/set_default_user.tmpl'
           repos: '/github/workspace/bazzite.repo /etc/yum.repos.d/fedora.repo /etc/yum.repos.d/fedora-updates.repo'
 
+      - name: Display ISO Checksum
+        shell: bash
+        run: |
+          echo "# ISO Checksum (SHA256)" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "ISO: ${{ steps.build.outputs.iso_name }}" >> $GITHUB_STEP_SUMMARY
+          cat ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM
+
       - name: Move ISOs to Upload Directory
         id: upload-directory
         shell: bash
