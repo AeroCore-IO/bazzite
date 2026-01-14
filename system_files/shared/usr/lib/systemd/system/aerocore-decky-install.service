@@ -1,0 +1,17 @@
+[Unit]
+Description=Aerocore Decky Installer
+After=network-online.target systemd-logind.service
+Wants=network-online.target
+ConditionPathExists=!/etc/systemd/system/multi-user.target.wants/plugin_loader.service
+Requires=systemd-logind.service
+
+[Service]
+Type=oneshot
+Environment=INSTALL_WAIT_SECS=180
+ExecStart=/usr/libexec/aerocore-decky-install.sh
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
