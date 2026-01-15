@@ -18,6 +18,40 @@ configure-beesd ACTION="":
         sudo rm -f "/etc/systemd/system/beesd@${uuid}.service.d/override.conf"
         sudo rmdir "/etc/systemd/system/beesd@${uuid}.service.d" 2>/dev/null || true
         echo "Configuration removed and timer disabled."
+
+        echo "Cleaning leftover data"
+        fs_root=$(findmnt --source UUID="$uuid" -o TARGET,OPTIONS | grep "subvolid=5" | awk '{print $1}')
+        is_manual_mount=false
+        if [[ -z "$fs_root" ]]; then
+            fs_root="/run/bees/mnt/${uuid}"
+            sudo mkdir -p "$fs_root"
+            if ! sudo mount -o subvolid=5 UUID="$uuid" "$fs_root"; then
+                fs_root=""
+            else
+                is_manual_mount=true
+            fi
+        fi
+
+        if [[ -n "$fs_root" ]]; then
+            beeshome_id=$(sudo btrfs subvolume list "$fs_root" -t | grep "\.beeshome" | awk '{print $1}')
+            if [[ -n "$beeshome_id" ]]; then
+                echo "Found .beeshome subvolume with ID: $beeshome_id"
+                sudo btrfs subvolume delete -i "$beeshome_id" "$fs_root"
+                echo "Deleted .beeshome subvolume"
+            else
+                echo "No .beeshome subvolume found"
+            fi
+
+            if [[ "$is_manual_mount" == true ]]; then
+                sudo umount "$fs_root"
+                sleep 1
+                # Device might still be busy
+                # Not critical if this fails
+                sudo rmdir "$fs_root" >/dev/null 2>&1
+            fi
+        fi
+
+        sudo systemctl daemon-reload
     }
 
     while true; do
@@ -106,7 +140,7 @@ configure-beesd ACTION="":
         # https://github.com/Zygo/bees/blob/master/docs/options.md#load-management-options
         sudo sed -i "s/^UUID=.*/UUID=${UUID}/" "/etc/bees/${UUID}.conf"
         sudo sed -i "s/# DB_SIZE=.*/DB_SIZE=${db_size}/" "/etc/bees/${UUID}.conf"
-        sudo sed -i "s/# OPTIONS=.*/OPTIONS=\"--strip-paths --no-timestamps --throttle-factor 10\"/" "/etc/bees/${UUID}.conf"
+        sudo sed -i "s/# OPTIONS=.*/OPTIONS=\"--strip-paths --no-timestamps --thread-factor 0.5 --throttle-factor 10\"/" "/etc/bees/${UUID}.conf"
         echo "Created /etc/bees/${UUID}.conf with DB_SIZE=${db_size} bytes"
 
         # Only start the service if enough memory is free
