@@ -8,17 +8,14 @@ IMAGE_INFO="/usr/share/ublue-os/image-info.json"
 IMAGE_NAME=$(jq -r '."image-name"' < $IMAGE_INFO)
 BASE_IMAGE_NAME=$(jq -r '."base-image-name"' < $IMAGE_INFO)
 
-is_valid_url() {
-  local value="$1"
-  [[ "$value" =~ ^https?://[^[:space:]]+$ ]]
-}
+[[ -r /usr/libexec/bazzite-mirror-utils.sh ]] && source /usr/libexec/bazzite-mirror-utils.sh
 
 # OPTIONAL MIRROR CONFIGURATION
 MIRROR_FILE="/etc/bazzite/mirrors"
 if [[ -r "$MIRROR_FILE" ]]; then
   while IFS='=' read -r key value; do
     [[ -z "$key" || "${key:0:1}" == "#" ]] && continue
-    if [[ "$key" == "FLATPAK_REMOTE_URL" ]] && is_valid_url "$value"; then
+    if [[ "$key" == "FLATPAK_REMOTE_URL" ]] && is_valid_mirror_url "$value"; then
       FLATPAK_REMOTE_URL="$value"
     fi
   done <"$MIRROR_FILE"

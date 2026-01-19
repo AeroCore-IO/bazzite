@@ -1,9 +1,6 @@
 #!/usr/bin/bash
 
-is_valid_mirror_value() {
-    local value="$1"
-    [[ "$value" =~ ^https?://[^[:space:]]+$ ]]
-}
+[[ -r /usr/libexec/bazzite-mirror-utils.sh ]] && source /usr/libexec/bazzite-mirror-utils.sh
 
 load_mirror_file() {
     local file="$1"
@@ -13,7 +10,7 @@ load_mirror_file() {
         [[ -z "$key" || "${key:0:1}" == "#" ]] && continue
         case "$key" in
             FLATPAK_REMOTE_URL|HOMEBREW_BOTTLE_DOMAIN)
-                if is_valid_mirror_value "$value"; then
+                if is_valid_mirror_url "$value"; then
                     export "$key"="$value"
                 fi
                 ;;

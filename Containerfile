@@ -547,8 +547,7 @@ RUN --mount=type=cache,dst=/var/cache \
         [[ -f /etc/bazzite/mirrors ]] || :> /etc/bazzite/mirrors; \
         [[ -f /etc/skel/mirrors ]] || :> /etc/skel/mirrors; \
         printf '%s\n' "FLATPAK_REMOTE_URL=${FLATPAK_REMOTE_URL}" | tee -a /etc/bazzite/mirrors /etc/skel/mirrors >/dev/null; \
-        awk -v url="${FLATPAK_REMOTE_URL%/}/" 'BEGIN{updated=0} /^Url=/ {print "Url=" url; updated=1; next} {print} END{if(!updated) print "Url=" url}' /etc/flatpak/remotes.d/flathub.flatpakrepo > /tmp/flathub.flatpakrepo && \
-        mv /tmp/flathub.flatpakrepo /etc/flatpak/remotes.d/flathub.flatpakrepo; \
+        bash /usr/libexec/bazzite-mirror-utils.sh update_flathub_repo_url "${FLATPAK_REMOTE_URL}"; \
     fi && \
     if [[ -n "${HOMEBREW_BOTTLE_DOMAIN}" ]]; then \
         mkdir -p /etc/bazzite; \
