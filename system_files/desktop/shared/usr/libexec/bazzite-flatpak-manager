@@ -12,7 +12,7 @@ BASE_IMAGE_NAME=$(jq -r '."base-image-name"' < $IMAGE_INFO)
 MIRROR_FILE="/etc/bazzite/mirrors"
 if [[ -r "$MIRROR_FILE" ]]; then
   while IFS='=' read -r key value; do
-    [[ -z "$key" || "$key" =~ ^# ]] && continue
+    [[ -z "$key" || "${key:0:1}" == "#" ]] && continue
     if [[ "$key" == "FLATPAK_REMOTE_URL" ]]; then
       FLATPAK_REMOTE_URL="$value"
     fi
@@ -37,9 +37,6 @@ fi
 flatpak remote-add --if-not-exists --system flathub /etc/flatpak/remotes.d/flathub.flatpakrepo
 flatpak remote-modify --system --enable flathub
 if [[ -n "${FLATPAK_REMOTE_URL:-}" ]]; then
-  if ! flatpak remote-info --system flathub >/dev/null 2>&1; then
-    flatpak remote-add --if-not-exists --system --from flathub /etc/flatpak/remotes.d/flathub.flatpakrepo
-  fi
   flatpak remote-modify --system --url="${FLATPAK_REMOTE_URL}" flathub
 fi
 

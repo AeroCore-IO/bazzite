@@ -5,7 +5,7 @@ load_mirror_file() {
     [[ -r "$file" ]] || return
 
     while IFS='=' read -r key value; do
-        [[ -z "$key" || "$key" =~ ^# ]] && continue
+        [[ -z "$key" || "${key:0:1}" == "#" ]] && continue
         case "$key" in
             FLATPAK_REMOTE_URL|HOMEBREW_BOTTLE_DOMAIN)
                 [[ -n "$value" ]] && export "$key"="$value"
