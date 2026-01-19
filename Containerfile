@@ -549,7 +549,11 @@ RUN --mount=type=cache,dst=/var/cache \
     fi && \
     if [[ -n "${FLATPAK_REMOTE_URL}" ]]; then \
         echo "FLATPAK_REMOTE_URL=${FLATPAK_REMOTE_URL}" | tee -a /etc/bazzite/mirrors /etc/skel/mirrors >/dev/null; \
-        sed -i "s#https://dl.flathub.org/repo/#${FLATPAK_REMOTE_URL%/}/#g" /etc/flatpak/remotes.d/flathub.flatpakrepo; \
+        if grep -q '^Url=' /etc/flatpak/remotes.d/flathub.flatpakrepo; then \
+            sed -i "s|^Url=.*|Url=${FLATPAK_REMOTE_URL%/}/|g" /etc/flatpak/remotes.d/flathub.flatpakrepo; \
+        else \
+            echo "Url=${FLATPAK_REMOTE_URL%/}/" >> /etc/flatpak/remotes.d/flathub.flatpakrepo; \
+        fi; \
     fi && \
     if [[ -n "${HOMEBREW_BOTTLE_DOMAIN}" ]]; then \
         echo "HOMEBREW_BOTTLE_DOMAIN=${HOMEBREW_BOTTLE_DOMAIN}" | tee -a /etc/bazzite/mirrors /etc/skel/mirrors >/dev/null; \
