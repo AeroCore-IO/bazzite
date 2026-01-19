@@ -567,7 +567,10 @@ PY
         printf '%s\n' "HOMEBREW_BOTTLE_DOMAIN=${HOMEBREW_BOTTLE_DOMAIN}" | tee -a /etc/bazzite/mirrors /etc/skel/mirrors >/dev/null; \
     fi && \
     if [[ -f /etc/bazzite/mirrors ]]; then \
-        chmod 644 /etc/bazzite/mirrors /etc/skel/mirrors; \
+        chmod 644 /etc/bazzite/mirrors; \
+    fi && \
+    if [[ -f /etc/skel/mirrors ]]; then \
+        chmod 644 /etc/skel/mirrors; \
     fi && \
     systemctl enable brew-setup.service && \
     systemctl disable fw-fanctrl.service && \
