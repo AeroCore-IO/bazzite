@@ -550,7 +550,7 @@ RUN --mount=type=cache,dst=/var/cache \
     if [[ -n "${FLATPAK_REMOTE_URL}" ]]; then \
         echo "FLATPAK_REMOTE_URL=${FLATPAK_REMOTE_URL}" | tee -a /etc/bazzite/mirrors /etc/skel/mirrors >/dev/null; \
         if grep -q '^Url=' /etc/flatpak/remotes.d/flathub.flatpakrepo; then \
-            sed -i "s|^Url=.*|Url=${FLATPAK_REMOTE_URL%/}/|g" /etc/flatpak/remotes.d/flathub.flatpakrepo; \
+            sed -i "s#^Url=.*#Url=${FLATPAK_REMOTE_URL%/}/#g" /etc/flatpak/remotes.d/flathub.flatpakrepo; \
         else \
             echo "Url=${FLATPAK_REMOTE_URL%/}/" >> /etc/flatpak/remotes.d/flathub.flatpakrepo; \
         fi; \

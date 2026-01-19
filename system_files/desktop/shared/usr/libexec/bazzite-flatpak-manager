@@ -37,12 +37,10 @@ fi
 flatpak remote-add --if-not-exists --system flathub /etc/flatpak/remotes.d/flathub.flatpakrepo
 flatpak remote-modify --system --enable flathub
 if [[ -n "${FLATPAK_REMOTE_URL:-}" ]]; then
-  if flatpak remote-info --system flathub >/dev/null 2>&1; then
-    flatpak remote-modify --system --url="${FLATPAK_REMOTE_URL}" flathub
-  else
+  if ! flatpak remote-info --system flathub >/dev/null 2>&1; then
     flatpak remote-add --if-not-exists --system --from flathub /etc/flatpak/remotes.d/flathub.flatpakrepo
-    flatpak remote-modify --system --url="${FLATPAK_REMOTE_URL}" flathub
   fi
+  flatpak remote-modify --system --url="${FLATPAK_REMOTE_URL}" flathub
 fi
 
 # Disable fedora flatpak remote
