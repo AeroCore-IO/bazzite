@@ -236,8 +236,8 @@ jobs:
       # Generate a file with all the build-args passed to buildah
       - name: Prepare build args file
         env:
-          FLATPAK_REMOTE_URL: ${{ secrets.FLATPAK_REMOTE_URL || vars.FLATPAK_REMOTE_URL }}
-          HOMEBREW_BOTTLE_DOMAIN: ${{ secrets.HOMEBREW_BOTTLE_DOMAIN || vars.HOMEBREW_BOTTLE_DOMAIN }}
+          FLATPAK_REMOTE_URL: ${{ vars.FLATPAK_REMOTE_URL }}
+          HOMEBREW_BOTTLE_DOMAIN: ${{ vars.HOMEBREW_BOTTLE_DOMAIN }}
         run: |
           cat <<'EOF' >>build_args.txt
           BASE_IMAGE_NAME=${{ steps.base.outputs.base_image_name }}
