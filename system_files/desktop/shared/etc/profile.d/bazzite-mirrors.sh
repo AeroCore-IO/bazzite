@@ -15,8 +15,8 @@ load_mirror_file() {
                 fi
                 ;;
         esac
-    done <"$file"
+done <"$file"
 }
 
-load_mirror_file /etc/bazzite/mirrors
-load_mirror_file "$HOME/mirrors"
+load_mirror_file /etc/environment.d/99-bazzite-mirrors.conf
+load_mirror_file "$HOME/.config/environment.d/99-bazzite-mirrors.conf"

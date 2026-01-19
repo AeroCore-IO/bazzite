@@ -11,15 +11,16 @@ BASE_IMAGE_NAME=$(jq -r '."base-image-name"' < $IMAGE_INFO)
 [[ -r /usr/libexec/bazzite-mirror-utils.sh ]] && source /usr/libexec/bazzite-mirror-utils.sh
 
 # OPTIONAL MIRROR CONFIGURATION
-MIRROR_FILE="/etc/bazzite/mirrors"
-if [[ -r "$MIRROR_FILE" ]]; then
-  while IFS='=' read -r key value; do
-    [[ -z "$key" || "${key:0:1}" == "#" ]] && continue
-    if [[ "$key" == "FLATPAK_REMOTE_URL" ]] && is_valid_mirror_url "$value"; then
-      FLATPAK_REMOTE_URL="$value"
-    fi
-  done <"$MIRROR_FILE"
-fi
+for MIRROR_FILE in /etc/environment.d/99-bazzite-mirrors.conf; do
+  if [[ -r "$MIRROR_FILE" ]]; then
+    while IFS='=' read -r key value; do
+      [[ -z "$key" || "${key:0:1}" == "#" ]] && continue
+      if [[ "$key" == "FLATPAK_REMOTE_URL" ]] && is_valid_mirror_url "$value"; then
+        FLATPAK_REMOTE_URL="$value"
+      fi
+    done <"$MIRROR_FILE"
+  fi
+done
 
 # IMAGE IDENTIFIERS
 KNOWN_IMAGE_NAME_FILE="/etc/bazzite/flatpak_manager_image_name"
