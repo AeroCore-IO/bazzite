@@ -548,15 +548,23 @@ RUN --mount=type=cache,dst=/var/cache \
         :> /etc/skel/mirrors; \
     fi && \
     if [[ -n "${FLATPAK_REMOTE_URL}" ]]; then \
-        echo "FLATPAK_REMOTE_URL=${FLATPAK_REMOTE_URL}" | tee -a /etc/bazzite/mirrors /etc/skel/mirrors >/dev/null; \
-        if grep -q '^Url=' /etc/flatpak/remotes.d/flathub.flatpakrepo; then \
-            sed -i "s~^Url=.*~Url=${FLATPAK_REMOTE_URL%/}/~g" /etc/flatpak/remotes.d/flathub.flatpakrepo; \
-        else \
-            echo "Url=${FLATPAK_REMOTE_URL%/}/" >> /etc/flatpak/remotes.d/flathub.flatpakrepo; \
-        fi; \
+        printf '%s\n' "FLATPAK_REMOTE_URL=${FLATPAK_REMOTE_URL}" | tee -a /etc/bazzite/mirrors /etc/skel/mirrors >/dev/null; \
+        python3 - "$FLATPAK_REMOTE_URL" <<'PY' && \
+import pathlib, sys
+url = (sys.argv[1].rstrip('/') + '/')
+repo = pathlib.Path("/etc/flatpak/remotes.d/flathub.flatpakrepo")
+lines = repo.read_text().splitlines()
+for idx, line in enumerate(lines):
+    if line.startswith("Url="):
+        lines[idx] = f"Url={url}"
+        break
+else:
+    lines.append(f"Url={url}")
+repo.write_text("\n".join(lines) + "\n")
+PY
     fi && \
     if [[ -n "${HOMEBREW_BOTTLE_DOMAIN}" ]]; then \
-        echo "HOMEBREW_BOTTLE_DOMAIN=${HOMEBREW_BOTTLE_DOMAIN}" | tee -a /etc/bazzite/mirrors /etc/skel/mirrors >/dev/null; \
+        printf '%s\n' "HOMEBREW_BOTTLE_DOMAIN=${HOMEBREW_BOTTLE_DOMAIN}" | tee -a /etc/bazzite/mirrors /etc/skel/mirrors >/dev/null; \
     fi && \
     if [[ -f /etc/bazzite/mirrors ]]; then \
         chmod 644 /etc/bazzite/mirrors /etc/skel/mirrors; \
