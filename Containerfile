@@ -30,6 +30,8 @@
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-kinoite}"
 ARG FEDORA_VERSION="${FEDORA_VERSION:-43}"
 ARG ARCH="${ARCH:-x86_64}"
+ARG FLATPAK_REMOTE_URL="${FLATPAK_REMOTE_URL:-}"
+ARG HOMEBREW_BOTTLE_DOMAIN="${HOMEBREW_BOTTLE_DOMAIN:-}"
 
 ARG BASE_IMAGE="${BASE_IMAGE:-ghcr.io/ublue-os/${BASE_IMAGE_NAME}-main:${FEDORA_VERSION}}"
 ARG NVIDIA_BASE="${NVIDIA_BASE:-bazzite}"
@@ -55,6 +57,8 @@ ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-kinoite}"
 ARG SHA_HEAD_SHORT="${SHA_HEAD_SHORT}"
 ARG VERSION_TAG="${VERSION_TAG}"
 ARG VERSION_PRETTY="${VERSION_PRETTY}"
+ARG FLATPAK_REMOTE_URL="${FLATPAK_REMOTE_URL:-}"
+ARG HOMEBREW_BOTTLE_DOMAIN="${HOMEBREW_BOTTLE_DOMAIN:-}"
 
 COPY system_files/desktop/shared system_files/desktop/${BASE_IMAGE_NAME} /
 COPY firmware /
@@ -538,6 +542,21 @@ RUN --mount=type=cache,dst=/var/cache \
     ln -s /usr/bin/true /usr/bin/pulseaudio && \
     mkdir -p /etc/flatpak/remotes.d && \
     curl --retry 3 -Lo /etc/flatpak/remotes.d/flathub.flatpakrepo https://dl.flathub.org/repo/flathub.flatpakrepo && \
+    if [[ -n "${FLATPAK_REMOTE_URL}" || -n "${HOMEBREW_BOTTLE_DOMAIN}" ]]; then \
+        mkdir -p /etc/bazzite; \
+        :> /etc/bazzite/mirrors; \
+        :> /etc/skel/mirrors; \
+    fi && \
+    if [[ -n "${FLATPAK_REMOTE_URL}" ]]; then \
+        echo "FLATPAK_REMOTE_URL=${FLATPAK_REMOTE_URL}" | tee -a /etc/bazzite/mirrors /etc/skel/mirrors >/dev/null; \
+        sed -i "s#https://dl.flathub.org/repo/#${FLATPAK_REMOTE_URL%/}/#g" /etc/flatpak/remotes.d/flathub.flatpakrepo; \
+    fi && \
+    if [[ -n "${HOMEBREW_BOTTLE_DOMAIN}" ]]; then \
+        echo "HOMEBREW_BOTTLE_DOMAIN=${HOMEBREW_BOTTLE_DOMAIN}" | tee -a /etc/bazzite/mirrors /etc/skel/mirrors >/dev/null; \
+    fi && \
+    if [[ -f /etc/bazzite/mirrors ]]; then \
+        chmod 644 /etc/bazzite/mirrors /etc/skel/mirrors; \
+    fi && \
     systemctl enable brew-setup.service && \
     systemctl disable fw-fanctrl.service && \
     systemctl disable scx_loader.service && \

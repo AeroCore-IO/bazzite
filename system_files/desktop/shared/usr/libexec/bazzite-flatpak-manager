@@ -1,12 +1,23 @@
 #!/usr/bin/bash
 
 # SCRIPT VERSION
-VER=31
+VER=32
 VER_FILE="/etc/bazzite/flatpak_manager_version"
 VER_RAN=$(cat $VER_FILE)
 IMAGE_INFO="/usr/share/ublue-os/image-info.json"
 IMAGE_NAME=$(jq -r '."image-name"' < $IMAGE_INFO)
 BASE_IMAGE_NAME=$(jq -r '."base-image-name"' < $IMAGE_INFO)
+
+# OPTIONAL MIRROR CONFIGURATION
+MIRROR_FILE="/etc/bazzite/mirrors"
+if [[ -r "$MIRROR_FILE" ]]; then
+  while IFS='=' read -r key value; do
+    [[ -z "$key" || "$key" =~ ^# ]] && continue
+    if [[ "$key" == "FLATPAK_REMOTE_URL" ]]; then
+      FLATPAK_REMOTE_URL="$value"
+    fi
+  done <"$MIRROR_FILE"
+fi
 
 # IMAGE IDENTIFIERS
 KNOWN_IMAGE_NAME_FILE="/etc/bazzite/flatpak_manager_image_name"
@@ -25,6 +36,10 @@ fi
 # Ensure Flathub is enabled
 flatpak remote-add --if-not-exists --system flathub /etc/flatpak/remotes.d/flathub.flatpakrepo
 flatpak remote-modify --system --enable flathub
+if [[ -n "${FLATPAK_REMOTE_URL:-}" ]]; then
+  flatpak remote-modify --system --url="${FLATPAK_REMOTE_URL}" flathub || \
+    flatpak remote-add --if-not-exists --system flathub "${FLATPAK_REMOTE_URL}"
+fi
 
 # Disable fedora flatpak remote
 flatpak remote-modify --disable fedora || :
