@@ -542,28 +542,18 @@ RUN --mount=type=cache,dst=/var/cache \
     ln -s /usr/bin/true /usr/bin/pulseaudio && \
     mkdir -p /etc/flatpak/remotes.d && \
     curl --retry 3 -Lo /etc/flatpak/remotes.d/flathub.flatpakrepo https://dl.flathub.org/repo/flathub.flatpakrepo && \
-    if [[ -n "${FLATPAK_REMOTE_URL}" || -n "${HOMEBREW_BOTTLE_DOMAIN}" ]]; then \
-        mkdir -p /etc/bazzite; \
-        :> /etc/bazzite/mirrors; \
-        :> /etc/skel/mirrors; \
-    fi && \
     if [[ -n "${FLATPAK_REMOTE_URL}" ]]; then \
+        mkdir -p /etc/bazzite; \
+        [[ -f /etc/bazzite/mirrors ]] || :> /etc/bazzite/mirrors; \
+        [[ -f /etc/skel/mirrors ]] || :> /etc/skel/mirrors; \
         printf '%s\n' "FLATPAK_REMOTE_URL=${FLATPAK_REMOTE_URL}" | tee -a /etc/bazzite/mirrors /etc/skel/mirrors >/dev/null; \
-        python3 - "$FLATPAK_REMOTE_URL" <<'PY' && \
-import pathlib, sys
-url = (sys.argv[1].rstrip('/') + '/')
-repo = pathlib.Path("/etc/flatpak/remotes.d/flathub.flatpakrepo")
-lines = repo.read_text().splitlines()
-for idx, line in enumerate(lines):
-    if line.startswith("Url="):
-        lines[idx] = f"Url={url}"
-        break
-else:
-    lines.append(f"Url={url}")
-repo.write_text("\n".join(lines) + "\n")
-PY
+        awk -v url="${FLATPAK_REMOTE_URL%/}/" 'BEGIN{updated=0} /^Url=/ {print "Url=" url; updated=1; next} {print} END{if(!updated) print "Url=" url}' /etc/flatpak/remotes.d/flathub.flatpakrepo > /tmp/flathub.flatpakrepo && \
+        mv /tmp/flathub.flatpakrepo /etc/flatpak/remotes.d/flathub.flatpakrepo; \
     fi && \
     if [[ -n "${HOMEBREW_BOTTLE_DOMAIN}" ]]; then \
+        mkdir -p /etc/bazzite; \
+        [[ -f /etc/bazzite/mirrors ]] || :> /etc/bazzite/mirrors; \
+        [[ -f /etc/skel/mirrors ]] || :> /etc/skel/mirrors; \
         printf '%s\n' "HOMEBREW_BOTTLE_DOMAIN=${HOMEBREW_BOTTLE_DOMAIN}" | tee -a /etc/bazzite/mirrors /etc/skel/mirrors >/dev/null; \
     fi && \
     if [[ -f /etc/bazzite/mirrors ]]; then \
