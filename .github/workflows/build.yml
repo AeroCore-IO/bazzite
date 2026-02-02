@@ -235,6 +235,9 @@ jobs:
 
       # Generate a file with all the build-args passed to buildah
       - name: Prepare build args file
+        env:
+          FLATPAK_REMOTE_URL: ${{ vars.FLATPAK_REMOTE_URL }}
+          HOMEBREW_BOTTLE_DOMAIN: ${{ vars.HOMEBREW_BOTTLE_DOMAIN }}
         run: |
           cat <<'EOF' >>build_args.txt
           BASE_IMAGE_NAME=${{ steps.base.outputs.base_image_name }}
@@ -251,6 +254,12 @@ jobs:
           VERSION_PRETTY=${{ steps.labels.outputs.pretty }}
           ARCH=${{ matrix.arch }}
           EOF
+          if [ -n "${FLATPAK_REMOTE_URL}" ]; then
+            echo "FLATPAK_REMOTE_URL=${FLATPAK_REMOTE_URL}" >>build_args.txt
+          fi
+          if [ -n "${HOMEBREW_BOTTLE_DOMAIN}" ]; then
+            echo "HOMEBREW_BOTTLE_DOMAIN=${HOMEBREW_BOTTLE_DOMAIN}" >>build_args.txt
+          fi
 
       # Build image using buildah and save it to raw-img
       - name: Build Image

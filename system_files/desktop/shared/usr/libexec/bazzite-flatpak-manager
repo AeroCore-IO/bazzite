@@ -12,6 +12,20 @@ IMAGE_INFO="/usr/share/ublue-os/image-info.json"
 IMAGE_NAME=$(jq -r '."image-name"' < $IMAGE_INFO)
 BASE_IMAGE_NAME=$(jq -r '."base-image-name"' < $IMAGE_INFO)
 
+[[ -r /usr/libexec/bazzite-mirror-utils.sh ]] && source /usr/libexec/bazzite-mirror-utils.sh
+
+# OPTIONAL MIRROR CONFIGURATION
+for MIRROR_FILE in /etc/environment.d/99-bazzite-mirrors.conf; do
+  if [[ -r "$MIRROR_FILE" ]]; then
+    while IFS='=' read -r key value; do
+      [[ -z "$key" || "${key:0:1}" == "#" ]] && continue
+      if [[ "$key" == "FLATPAK_REMOTE_URL" ]] && is_valid_mirror_url "$value"; then
+        FLATPAK_REMOTE_URL="$value"
+      fi
+    done <"$MIRROR_FILE"
+  fi
+done
+
 # IMAGE IDENTIFIERS
 KNOWN_IMAGE_NAME_FILE="/etc/bazzite/flatpak_manager_image_name"
 KNOWN_IMAGE_NAME=$(cat $KNOWN_IMAGE_NAME_FILE)
@@ -27,8 +41,11 @@ if [[ -f $VER_FILE && $VER = $VER_RAN ]]; then
 fi
 
 # Ensure Flathub is enabled
-flatpak remote-add --if-not-exists --system flathub /etc/flatpak/remotes.d/flathub.flatpakrepo || :
-flatpak remote-modify --system --enable flathub || :
+flatpak remote-add --if-not-exists --system flathub /etc/flatpak/remotes.d/flathub.flatpakrepo
+flatpak remote-modify --system --enable flathub
+if [[ -n "${FLATPAK_REMOTE_URL:-}" ]]; then
+  flatpak remote-modify --system --url="${FLATPAK_REMOTE_URL}" flathub
+fi
 
 # Disable fedora flatpak remote
 flatpak remote-modify --disable fedora || :

@@ -30,6 +30,8 @@
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-kinoite}"
 ARG FEDORA_VERSION="${FEDORA_VERSION:-43}"
 ARG ARCH="${ARCH:-x86_64}"
+ARG FLATPAK_REMOTE_URL="${FLATPAK_REMOTE_URL:-}"
+ARG HOMEBREW_BOTTLE_DOMAIN="${HOMEBREW_BOTTLE_DOMAIN:-}"
 
 ARG BASE_IMAGE="${BASE_IMAGE:-ghcr.io/ublue-os/${BASE_IMAGE_NAME}-main:${FEDORA_VERSION}}"
 ARG NVIDIA_BASE="${NVIDIA_BASE:-bazzite}"
@@ -55,6 +57,8 @@ ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-kinoite}"
 ARG SHA_HEAD_SHORT="${SHA_HEAD_SHORT}"
 ARG VERSION_TAG="${VERSION_TAG}"
 ARG VERSION_PRETTY="${VERSION_PRETTY}"
+ARG FLATPAK_REMOTE_URL="${FLATPAK_REMOTE_URL:-}"
+ARG HOMEBREW_BOTTLE_DOMAIN="${HOMEBREW_BOTTLE_DOMAIN:-}"
 
 COPY system_files/desktop/shared system_files/desktop/${BASE_IMAGE_NAME} /
 COPY firmware /
@@ -538,6 +542,24 @@ RUN --mount=type=cache,dst=/var/cache \
     ln -s /usr/bin/true /usr/bin/pulseaudio && \
     mkdir -p /etc/flatpak/remotes.d && \
     curl --retry 3 -Lo /etc/flatpak/remotes.d/flathub.flatpakrepo https://dl.flathub.org/repo/flathub.flatpakrepo && \
+    if [[ -n "${FLATPAK_REMOTE_URL}" || -n "${HOMEBREW_BOTTLE_DOMAIN}" ]]; then \
+        mkdir -p /etc/environment.d /etc/skel/.config/environment.d; \
+        :> /etc/environment.d/99-bazzite-mirrors.conf; \
+        :> /etc/skel/.config/environment.d/99-bazzite-mirrors.conf; \
+    fi && \
+    if [[ -n "${FLATPAK_REMOTE_URL}" ]]; then \
+        printf '%s\n' "FLATPAK_REMOTE_URL=${FLATPAK_REMOTE_URL}" | tee -a /etc/environment.d/99-bazzite-mirrors.conf /etc/skel/.config/environment.d/99-bazzite-mirrors.conf >/dev/null; \
+        bash /usr/libexec/bazzite-mirror-utils.sh update_flathub_repo_url "${FLATPAK_REMOTE_URL}"; \
+    fi && \
+    if [[ -n "${HOMEBREW_BOTTLE_DOMAIN}" ]]; then \
+        printf '%s\n' "HOMEBREW_BOTTLE_DOMAIN=${HOMEBREW_BOTTLE_DOMAIN}" | tee -a /etc/environment.d/99-bazzite-mirrors.conf /etc/skel/.config/environment.d/99-bazzite-mirrors.conf >/dev/null; \
+    fi && \
+    if [[ -f /etc/environment.d/99-bazzite-mirrors.conf ]]; then \
+        chmod 644 /etc/environment.d/99-bazzite-mirrors.conf; \
+    fi && \
+    if [[ -f /etc/skel/.config/environment.d/99-bazzite-mirrors.conf ]]; then \
+        chmod 644 /etc/skel/.config/environment.d/99-bazzite-mirrors.conf; \
+    fi && \
     systemctl enable brew-setup.service && \
     systemctl disable fw-fanctrl.service && \
     systemctl disable scx_loader.service && \
