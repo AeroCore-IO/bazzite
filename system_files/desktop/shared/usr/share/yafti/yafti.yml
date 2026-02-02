@@ -26,6 +26,13 @@ screens:
         description: "Rollback to the previous Bazzite deployment"
         default: false
         script: "brh rollback -y && reboot"
+
+      - id: "reset-bazzite"
+        title: "Reset Bazzite"
+        description: "Reset Bazzite layering to Default (Only resets layers NOT user data)" 
+        default: false
+        script: "rpm-ostree reset"
+        
   - title: "Setting up Bazzite"
     description: "Core system components and utilities"
     actions:
@@ -260,3 +267,41 @@ screens:
         description: "Toggle global Proton FSR4 upgrade on RDNA3 GPUs (e.g. RX 7900 XTX); upgrades FSR 3.1+ → FSR 4. Only compatible with Proton GE, Proton EM, or similar forks."
         default: false
         script: "ujust toggle-global-fsr4-rdna3 enable"
+      - id: "global-dlss"
+        title: "Global DLSS Upgrade"
+        description: "Toggle global Proton DLSS upgrade; updates DLSS DLLs. Only compatible with Proton GE, Proton EM, or similar forks."
+        default: false
+        script: "ujust toggle-global-dlss enable"
+  - title: "Brew"
+    description: "Brew Taps and Casks"
+    actions:
+      - id: "ublue-tap"
+        title: "Add the Ublue tap"
+        description: "Adds the Ublue Brew tap"
+        default: false
+        script: 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && brew tap ublue-os/tap'
+      - id: "visual-studio-code-linux"
+        title: "Install Visual Studio Code (Needs Ublue Tap)"
+        description: "Installs Visual Studio Code editor"
+        default: false
+        script: 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && brew install --cask visual-studio-code-linux'
+      - id: "antigravity-linux"
+        title: "Install Antigravity (Needs Ublue Tap)"
+        description: "Installs Antigravity"
+        default: false
+        script: 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && brew install --cask antigravity-linux'
+      - id: "lm-studio-linux"
+        title: "Install LM Studio (Needs Ublue Tap)"
+        description: "Installs LM Studio"
+        default: false
+        script: 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && brew install --cask lm-studio-linux'
+      - id: "jetbrains-toolbox-linux"
+        title: "Install JetBrains Toolbox (Needs Ublue Tap)"
+        description: "Installs JetBrains Toolbox"
+        default: false
+        script: 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && brew install --cask jetbrains-toolbox-linux'
+      - id: "vscodium-linux"
+        title: "Install VSCodium (Needs Ublue Tap)"
+        description: "Installs VSCodium editor"
+        default: false
+        script: 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && brew install --cask vscodium-linux'
