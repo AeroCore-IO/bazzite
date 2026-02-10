@@ -4,6 +4,10 @@ name: Build Live ISOs
 on:
   workflow_dispatch:
   workflow_call:
+  push:
+    branches: [testing]
+    paths:
+      - installer/**
 
 env:
   IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
@@ -52,7 +56,7 @@ jobs:
 
       - name: Mount BTRFS for podman storage
         if: ${{ steps.check_mnt.outputs.mnt_is_there == '1' }}
-        uses: ublue-os/container-storage-action@911baca08baf30c8654933e9e9723cb399892140
+        uses: ublue-os/container-storage-action@8795b9b5dc8c520b1a56227a543cd5bac6181f2b
         with:
           target-dir: /var/lib/containers
         continue-on-error: true
@@ -145,7 +149,7 @@ jobs:
           name: ${{ matrix.image_name }}-${{ steps.generate-tag.outputs.tag }}-${{ matrix.major_version}}
           path: ${{ steps.upload-directory.outputs.iso-upload-dir }}
           if-no-files-found: error
-          retention-days: 0
+          retention-days: 1
           compression-level: 0
           overwrite: true
 

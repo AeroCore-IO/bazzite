@@ -450,7 +450,7 @@ cat >>/usr/bin/on_gui_login.sh <<'EOF'
 serve_docs(){
   ADDRESS=127.0.0.1
   PORT=1290
-  { python -m http.server -b $ADDRESS $PORT -d "$(dirname "$0")"/html; } >/dev/null 2>&1 &
+  { python -m http.server -b $ADDRESS $PORT -d /usr/share/ublue-os/docs/html; } >/dev/null 2>&1 &
   if [[ $- == *i* ]]; then
       fg >/dev/null 2>&1 || true
   fi
@@ -543,7 +543,7 @@ echo "image name: ""$image_name"
 title="Bazzite Hardware Helper"
 heading_unsupported="<b>Unsupported Graphics Card</b>\n"
 detected_unsupported="We've detected you're using a now unsupported NVIDIA GPU.\nUnfortunately, we cannot provide good support for your hardware ourselves.\n\n"
-recommend_unsupported="Please read our <a href=\"http://127.0.0.1:1290/General/FAQ/#will-you-add-support-for-even-older-nvidia-graphics-cards\"><b>documentation</b></a> for more information.\n"
+recommend_unsupported="Please read our <a href=\"http://127.0.0.1:1290/General/FAQ/#will-support-for-much-older-nvidia-graphics-cards-be-added\"><b>documentation</b></a> for more information.\n"
 heading_unknown="<b>Unknown Graphics Card</b>\n"
 detected_unknown="We could not identify your NVIDIA graphics card.\n\n"
 recommend_unknown="It is not recommended to install Bazzite as we cannot guarantee your hardware will work."
@@ -657,8 +657,6 @@ dnf -yq remove steam lutris bazaar || :
     wallpaper_url=https://github.com/ublue-os/bazzite/raw/refs/heads/main/press_kit/art/Convergence_Wallpaper_DX.jxl
     wallpaper_file=/usr/share/wallpapers/convergence.jxl
     wget -nv -O "$wallpaper_file" "$wallpaper_url"
-    cp 2>/dev/null "$wallpaper_file" /usr/share/backgrounds/convergence.jxl || :
-    cp 2>/dev/null "$wallpaper_file" /usr/share/backgrounds/convergence/convergence_morn.jxl || :
     rm -f /usr/share/backgrounds/default.xml
 )
 
@@ -675,21 +673,22 @@ if [[ $imageref == *-deck* ]]; then
     fi
 fi
 
-# Tweak the fedora-welcome app (gnome only) with our own text/icons
+# Don't start the fedora-welcome app (gnome only)
 if [[ $desktop_env == gnome ]]; then
-    sed -i 's| Fedora| Bazzite|' /usr/share/anaconda/gnome/fedora-welcome || :
-    cp -f /usr/share/pixmaps/{fedora-logo-sprite,fedora-logo-icon}.png || :
+    sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nHidden=true@g' /usr/share/anaconda/gnome/org.fedoraproject.welcome-screen.desktop || :
 fi
 
-# Let only browser/installer in the task-bar/dock
+# Let only browser/installer/file manager in the task-bar/dock, set new background for GNOME
 if [[ $desktop_env == kde ]]; then
     sed -i '/<entry name="launchers" type="StringList">/,/<\/entry>/ s/<default>[^<]*<\/default>/<default>preferred:\/\/browser,applications:liveinst.desktop,preferred:\/\/filemanager<\/default>/' \
         /usr/share/plasma/plasmoids/org.kde.plasma.taskmanager/contents/config/main.xml
 elif [[ $desktop_env == gnome ]]; then
     cat >/usr/share/glib-2.0/schemas/zz2-org.gnome.shell.gschema.override <<EOF
 [org.gnome.shell]
-welcome-dialog-last-shown-version='4294967295'
-favorite-apps = ['liveinst.desktop', 'org.mozilla.firefox.desktop', 'org.gnome.Nautilus.desktop']
+favorite-apps = ['anaconda.desktop', 'org.mozilla.firefox.desktop', 'org.gnome.Nautilus.desktop']
+[org.gnome.desktop.background]
+picture-uri="file:///usr/share/wallpapers/convergence.jxl"
+picture-uri-dark="file:///usr/share/wallpapers/convergence.jxl"
 EOF
     glib-compile-schemas /usr/share/glib-2.0/schemas
 fi
