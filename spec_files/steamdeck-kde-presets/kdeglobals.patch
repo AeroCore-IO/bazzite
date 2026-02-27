@@ -1,6 +1,6 @@
 --- a/etc/xdg/kdeglobals
 +++ b/etc/xdg/kdeglobals
-@@ -11,7 +11,12 @@
+@@ -11,5 +11,8 @@
 kcm_sddm.desktop=false
 kcm_plymouth.desktop=false
 +kcm_updates=false
