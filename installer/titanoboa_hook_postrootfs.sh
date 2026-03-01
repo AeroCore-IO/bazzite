@@ -23,6 +23,8 @@ imageref="$(podman images --format '{{ index .Names 0 }}\n' 'bazzite*' | head -1
 imageref="${imageref##*://}"
 imageref="${imageref%%:*}"
 imagetag="$(podman images --format '{{ .Tag }}\n' "$imageref" | head -1)"
+OSTREE_REGISTRY="${OSTREE_REGISTRY:-docker://ghcr.io}"
+OSTREE_NAMESPACE="${OSTREE_NAMESPACE:-${IMAGE_VENDOR:-ublue-os}}"
 sbkey='https://github.com/ublue-os/akmods/raw/main/certs/public_key.der'
 SECUREBOOT_KEY="/usr/share/ublue-os/sb_pubkey.der"
 SECUREBOOT_DOC_URL="https://docs.bazzite.gg/sb"
@@ -157,7 +159,7 @@ cat <<EOF >>/usr/share/anaconda/post-scripts/install-configure-upgrade.ks
 # bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry $imageref:$imagetag
 
 # DELETEME: This is a nasty hack. Remove whenever http://github.com/bootc-dev/bootc/commit/f7b41cc1ebfc823e9de848b55773faddc59ecf88 makes it into a release
-sed -i 's|container-image-reference=.*|container-image-reference=ostree-image-signed:docker://$imageref:$imagetag|' /ostree/deploy/default/deploy/*.origin
+sed -i 's|container-image-reference=.*|container-image-reference=ostree-image-signed:${OSTREE_REGISTRY%/}/$OSTREE_NAMESPACE/${imageref##*/}:$imagetag|' /ostree/deploy/default/deploy/*.origin
 %end
 EOF
 

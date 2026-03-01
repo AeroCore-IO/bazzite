@@ -12,6 +12,14 @@
 # 7: Failure (e.g., uupd not installed, upgrade already installed, update checks failed, or connectivity check failed).
 # Dynamic: Value propagated from /usr/bin/hhd.steamos if it is executed and returns a non-20 code.
 
+if [[ -r /etc/environment.d/99-aerocore.conf ]]; then
+    # shellcheck disable=SC1091
+    source /etc/environment.d/99-aerocore.conf
+fi
+
+OSTREE_REGISTRY="${OSTREE_REGISTRY:-docker://ghcr.io}"
+UPDATE_REGISTRY_HOST="${OSTREE_REGISTRY#docker://}"
+
 # Fake upgrade progress bar
 _fake_progress() {
     local value=0
@@ -87,7 +95,7 @@ if [ -n "${_CHECK}" ]; then
         exit 7 # Upgrade already installed
     else
         # Perform connectivity check
-        if ! wget -q --spider https://github.com; then
+        if ! wget -q --spider "https://${UPDATE_REGISTRY_HOST}/v2/"; then
             exit 7 # Connectivity check failed
         fi
 

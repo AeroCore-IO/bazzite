@@ -2,9 +2,18 @@
 
 source /usr/lib/ujust/ujust.sh
 
+if [[ -r /etc/environment.d/99-aerocore.conf ]]; then
+  # shellcheck disable=SC1091
+  source /etc/environment.d/99-aerocore.conf
+fi
+
 IMAGE_INFO="/usr/share/ublue-os/image-info.json"
 DEFAULT_IMAGE=$(jq -r '."image-name"' < $IMAGE_INFO)
 DEFAULT_BRANCH=stable
+DEFAULT_PROVIDER="${OSTREE_NAMESPACE:-ublue-os}"
+OSTREE_REGISTRY="${OSTREE_REGISTRY:-docker://ghcr.io}"
+OSTREE_NAMESPACE="${OSTREE_NAMESPACE:-$DEFAULT_PROVIDER}"
+OSTREE_REGISTRY_HOST="${OSTREE_REGISTRY#docker://}"
 
 # Cache skopeo output if possible (only if bkt already exists)
 if command -v bkt >/dev/null 2>&1; then
@@ -77,7 +86,7 @@ target_de() {
 
 signing_scheme() {
   local current=$(rpm-ostree status -b --json | jq -r '.deployments[]["container-image-reference"]')
-  [[ "$current" == *"ostree-image-signed"* ]] && echo "ostree-image-signed:docker://ghcr.io" || echo "ostree-unverified-registry:ghcr.io"
+  [[ "$current" == *"ostree-image-signed"* ]] && echo "ostree-image-signed:${OSTREE_REGISTRY%/}" || echo "ostree-unverified-registry:${OSTREE_REGISTRY_HOST%/}"
 }
 
 warn_if_de_mismatch() {
@@ -115,15 +124,15 @@ skopeo_tags() {
     testing) regex="$regex | select(test(\"^testing\"))" ;;
   esac
   
-  skopeo list-tags "docker://ghcr.io/$provider/$image" | jq -r "$regex" | sort
+  skopeo list-tags "${OSTREE_REGISTRY%/}/$provider/$image" | jq -r "$regex" | sort
 }
 
 available_variants() {
-  local provider="${1:-ublue-os}"
+  local provider="${1:-$DEFAULT_PROVIDER}"
   echo >&2 "Checking variants from $provider..."
   
   for variant in "${VARIANTS[@]}"; do
-    skopeo list-tags "docker://ghcr.io/$provider/$variant" >/dev/null 2>&1 && echo "$variant"
+    skopeo list-tags "${OSTREE_REGISTRY%/}/$provider/$variant" >/dev/null 2>&1 && echo "$variant"
   done
 }
 
@@ -158,11 +167,11 @@ rebase_to() {
     ostree-*) ;;
     *:*) 
       local scheme=$(signing_scheme)
-      full_ref="$scheme/ublue-os/$target"
+      full_ref="$scheme/$DEFAULT_PROVIDER/$target"
       ;;
     *)
       local scheme=$(signing_scheme)
-      full_ref="$scheme/ublue-os/$DEFAULT_IMAGE:$target"
+      full_ref="$scheme/$DEFAULT_PROVIDER/$DEFAULT_IMAGE:$target"
       ;;
   esac
   
@@ -245,10 +254,10 @@ list_images() {
   
   if [[ "$branch" == "all" ]]; then
     echo >&2 "Listing all available images..."
-    skopeo_tags "ublue-os" "bazzite" "all"
+    skopeo_tags "$DEFAULT_PROVIDER" "bazzite" "all"
   else
     echo >&2 "Listing $branch images..."
-    skopeo_tags "ublue-os" "bazzite" "$branch"
+    skopeo_tags "$DEFAULT_PROVIDER" "bazzite" "$branch"
   fi
 }
 
@@ -299,14 +308,14 @@ interactive_menu() {
     case "$action" in
       "List Images")
         clear
-        local variants=$(available_variants "ublue-os")
-        local img=$(pick_image "ublue-os")
+        local variants=$(available_variants "$DEFAULT_PROVIDER")
+        local img=$(pick_image "$DEFAULT_PROVIDER")
         [[ "$img" != "Back" ]] && { 
           clear
-          local filter=$(choose_filter "ublue-os" "$img")
+          local filter=$(choose_filter "$DEFAULT_PROVIDER" "$img")
           [[ "$filter" != "Back" ]] && {
             clear
-            skopeo_tags "ublue-os" "$img" "${filter,,}"
+            skopeo_tags "$DEFAULT_PROVIDER" "$img" "${filter,,}"
             press_any_key
           }
         }
@@ -326,14 +335,14 @@ interactive_menu() {
         
       "Rebase")
         clear
-        local img=$(pick_image "ublue-os")
+        local img=$(pick_image "$DEFAULT_PROVIDER")
         if [[ "$img" != "Back" ]]; then
-          local filter=$(choose_filter "ublue-os" "$img")
+          local filter=$(choose_filter "$DEFAULT_PROVIDER" "$img")
           if [[ "$filter" != "Back" ]]; then
-            local version=$(pick_version "ublue-os" "$img" "${filter,,}")
+            local version=$(pick_version "$DEFAULT_PROVIDER" "$img" "${filter,,}")
             [[ "$version" != "Back" && -n "$version" ]] && {
               clear
-              rebase_to "$(signing_scheme)/ublue-os/$img:$version"
+              rebase_to "$(signing_scheme)/$DEFAULT_PROVIDER/$img:$version"
               press_any_key
             }
           fi
@@ -342,9 +351,9 @@ interactive_menu() {
         
       "Custom Provider")
         clear
-        echo "Enter provider name (default: ublue-os):"
+        echo "Enter provider name (default: $DEFAULT_PROVIDER):"
         read -r provider
-        provider="${provider:-ublue-os}"
+        provider="${provider:-$DEFAULT_PROVIDER}"
         provider=$(echo "$provider" | tr '[:upper:]' '[:lower:]')
         
         local img=$(pick_image "$provider")
