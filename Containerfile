@@ -32,6 +32,8 @@ ARG FEDORA_VERSION="${FEDORA_VERSION:-43}"
 ARG ARCH="${ARCH:-x86_64}"
 ARG FLATPAK_REMOTE_URL="${FLATPAK_REMOTE_URL:-}"
 ARG HOMEBREW_BOTTLE_DOMAIN="${HOMEBREW_BOTTLE_DOMAIN:-}"
+ARG OSTREE_REGISTRY="${OSTREE_REGISTRY:-docker://ghcr.io}"
+ARG OSTREE_NAMESPACE="${OSTREE_NAMESPACE:-ublue-os}"
 
 ARG BASE_IMAGE="${BASE_IMAGE:-ghcr.io/ublue-os/${BASE_IMAGE_NAME}-main:${FEDORA_VERSION}}"
 ARG NVIDIA_BASE="${NVIDIA_BASE:-bazzite}"
@@ -59,6 +61,8 @@ ARG VERSION_TAG="${VERSION_TAG}"
 ARG VERSION_PRETTY="${VERSION_PRETTY}"
 ARG FLATPAK_REMOTE_URL="${FLATPAK_REMOTE_URL:-}"
 ARG HOMEBREW_BOTTLE_DOMAIN="${HOMEBREW_BOTTLE_DOMAIN:-}"
+ARG OSTREE_REGISTRY="${OSTREE_REGISTRY}"
+ARG OSTREE_NAMESPACE="${OSTREE_NAMESPACE}"
 
 COPY system_files/desktop/shared system_files/desktop/${BASE_IMAGE_NAME} /
 COPY firmware /
@@ -564,6 +568,13 @@ RUN --mount=type=cache,dst=/var/cache \
         :> /etc/environment.d/99-bazzite-mirrors.conf; \
         :> /etc/skel/.config/environment.d/99-bazzite-mirrors.conf; \
     fi && \
+    mkdir -p /etc/environment.d /etc/skel/.config/environment.d && \
+    :> /etc/environment.d/99-aerocore.conf && \
+    :> /etc/skel/.config/environment.d/99-aerocore.conf && \
+    printf '%s\n' \
+        "OSTREE_REGISTRY=${OSTREE_REGISTRY:-docker://ghcr.io}" \
+        "OSTREE_NAMESPACE=${OSTREE_NAMESPACE:-ublue-os}" \
+        | tee -a /etc/environment.d/99-aerocore.conf /etc/skel/.config/environment.d/99-aerocore.conf >/dev/null && \
     if [[ -n "${FLATPAK_REMOTE_URL}" ]]; then \
         printf '%s\n' "FLATPAK_REMOTE_URL=${FLATPAK_REMOTE_URL}" | tee -a /etc/environment.d/99-bazzite-mirrors.conf /etc/skel/.config/environment.d/99-bazzite-mirrors.conf >/dev/null; \
         bash /usr/libexec/bazzite-mirror-utils.sh update_flathub_repo_url "${FLATPAK_REMOTE_URL}"; \
@@ -577,6 +588,7 @@ RUN --mount=type=cache,dst=/var/cache \
     if [[ -f /etc/skel/.config/environment.d/99-bazzite-mirrors.conf ]]; then \
         chmod 644 /etc/skel/.config/environment.d/99-bazzite-mirrors.conf; \
     fi && \
+    chmod 644 /etc/environment.d/99-aerocore.conf /etc/skel/.config/environment.d/99-aerocore.conf && \
     systemctl enable brew-setup.service && \
     systemctl disable fw-fanctrl.service && \
     systemctl disable scx_loader.service && \
@@ -628,6 +640,8 @@ ARG IMAGE_BRANCH="${IMAGE_BRANCH:-stable}"
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-kinoite}"
 ARG VERSION_TAG="${VERSION_TAG}"
 ARG VERSION_PRETTY="${VERSION_PRETTY}"
+ARG OSTREE_REGISTRY="${OSTREE_REGISTRY}"
+ARG OSTREE_NAMESPACE="${OSTREE_NAMESPACE}"
 
 COPY system_files/deck/shared system_files/deck/${BASE_IMAGE_NAME} /
 
@@ -814,6 +828,8 @@ ARG IMAGE_BRANCH="${IMAGE_BRANCH:-stable}"
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-kinoite}"
 ARG VERSION_TAG="${VERSION_TAG}"
 ARG VERSION_PRETTY="${VERSION_PRETTY}"
+ARG OSTREE_REGISTRY="${OSTREE_REGISTRY}"
+ARG OSTREE_NAMESPACE="${OSTREE_NAMESPACE}"
 
 # Fetch NVIDIA driver
 COPY system_files/nvidia/shared system_files/nvidia/${BASE_IMAGE_NAME} /

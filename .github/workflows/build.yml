@@ -255,6 +255,8 @@ jobs:
         env:
           FLATPAK_REMOTE_URL: ${{ vars.FLATPAK_REMOTE_URL }}
           HOMEBREW_BOTTLE_DOMAIN: ${{ vars.HOMEBREW_BOTTLE_DOMAIN }}
+          ACR_REGISTRY: ${{ vars.ACR_REGISTRY }}
+          ACR_NAMESPACE: ${{ vars.ACR_NAMESPACE }}
         run: |
           cat <<'EOF' >>build_args.txt
           BASE_IMAGE_NAME=${{ steps.base.outputs.base_image_name }}
@@ -271,6 +273,12 @@ jobs:
           VERSION_PRETTY=${{ steps.labels.outputs.pretty }}
           ARCH=${{ matrix.arch }}
           EOF
+          if [ -n "${ACR_REGISTRY}" ]; then
+            echo "OSTREE_REGISTRY=docker://${ACR_REGISTRY}" >>build_args.txt
+          fi
+          if [ -n "${ACR_NAMESPACE}" ]; then
+            echo "OSTREE_NAMESPACE=${ACR_NAMESPACE}" >>build_args.txt
+          fi
           if [ -n "${FLATPAK_REMOTE_URL}" ]; then
             echo "FLATPAK_REMOTE_URL=${FLATPAK_REMOTE_URL}" >>build_args.txt
           fi

@@ -12,7 +12,9 @@ LOGO_ICON="bazzite-logo-icon"
 LOGO_COLOR="0;38;2;138;43;226"
 
 IMAGE_INFO="/usr/share/ublue-os/image-info.json"
-IMAGE_REF="ostree-image-signed:docker://ghcr.io/$IMAGE_VENDOR/$IMAGE_NAME"
+OSTREE_REGISTRY="${OSTREE_REGISTRY:-docker://ghcr.io}"
+OSTREE_NAMESPACE="${OSTREE_NAMESPACE:-$IMAGE_VENDOR}"
+IMAGE_REF="ostree-image-signed:${OSTREE_REGISTRY%/}/$OSTREE_NAMESPACE/$IMAGE_NAME"
 IMAGE_BRANCH_NORMALIZED=$IMAGE_BRANCH
 
 if [[ $IMAGE_BRANCH_NORMALIZED == "main" ]]; then
