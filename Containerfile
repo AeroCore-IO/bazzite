@@ -294,6 +294,7 @@ RUN --mount=type=cache,dst=/var/cache \
     systemctl disable iwd.service && \
     mkdir -p /usr/lib/extest/ && \
     /ctx/ghcurl "$(/ctx/ghcurl https://api.github.com/repos/ublue-os/extest/releases/latest | jq -r '.assets[] | select(.name| test(".*so$")).browser_download_url')" -Lo /usr/lib/extest/libextest.so && \
+    setfattr -n user.component -v "extest" /usr/lib/extest/libextest.so && \
     chmod +x /usr/bin/framework_tool && \
     sed -i 's|uupd|& --disable-module-distrobox|' /usr/lib/systemd/system/uupd.service && \
     setcap 'cap_sys_admin+p' $(readlink -f /usr/bin/sunshine) && \
@@ -346,6 +347,7 @@ RUN --mount=type=cache,dst=/var/cache \
         gamemode && \
     /ctx/ghcurl "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks" -Lo /usr/bin/winetricks && \
     chmod +x /usr/bin/winetricks && \
+    setfattr -n user.component -v "winetricks" /usr/bin/winetricks && \
     /ctx/cleanup
 
 # Install ujust-picker from GitHub releases
@@ -356,6 +358,7 @@ RUN --mount=type=cache,dst=/var/cache \
     --mount=type=secret,id=GITHUB_TOKEN \
     /ctx/ghcurl "$(/ctx/ghcurl "https://api.github.com/repos/ublue-os/bazzite-ujust-picker/releases/latest" -s | jq -r '.assets[] | select(.name | test("x86_64$")) | .browser_download_url')" -sL -o /usr/bin/ujust-picker && \
     chmod +x /usr/bin/ujust-picker && \
+    setfattr -n user.component -v "ujust-picker" /usr/bin/ujust-picker && \
     /ctx/cleanup
 
 # Configure KDE & GNOME
@@ -446,6 +449,7 @@ RUN --mount=type=cache,dst=/var/cache \
             gnome-shell-extension-places-menu \
             gnome-shell-extension-window-list && \
         /ctx/ghcurl "https://raw.githubusercontent.com/jlu5/icoextract/master/exe-thumbnailer.thumbnailer" -Lo /usr/share/thumbnailers/exe-thumbnailer.thumbnailer && \
+        setfattr -n user.component -v "exe-thumbnailer" /usr/share/thumbnailers/exe-thumbnailer.thumbnailer && \
         /ctx/build-gnome-extensions && \
         systemctl enable dconf-update.service \
     ; fi && \
@@ -504,11 +508,6 @@ RUN --mount=type=cache,dst=/var/cache \
     echo "import \"/usr/share/ublue-os/just/92-bazzite-verify.just\"" >> /usr/share/ublue-os/justfile && \
     if grep -q "kinoite" <<< "${BASE_IMAGE_NAME}"; then \
       systemctl enable usr-share-sddm-themes.mount && \
-      mkdir -p "/usr/share/ublue-os/dconfs/desktop-kinoite/" && \
-      cp "/usr/share/glib-2.0/schemas/zz0-"*"-bazzite-desktop-kinoite-"*".gschema.override" "/usr/share/ublue-os/dconfs/desktop-kinoite/" && \
-      find "/etc/dconf/db/distro.d/" -maxdepth 1 -type f -exec cp {} "/usr/share/ublue-os/dconfs/desktop-kinoite/" \; && \
-      dconf-override-converter to-dconf "/usr/share/ublue-os/dconfs/desktop-kinoite/zz0-"*"-bazzite-desktop-kinoite-"*".gschema.override" && \
-      rm "/usr/share/ublue-os/dconfs/desktop-kinoite/zz0-"*"-bazzite-desktop-kinoite-"*".gschema.override" && \
       sed -i 's@Exec=/usr/bin/ptyxis@Exec=/usr/bin/kde-ptyxis@g' /usr/share/dbus-1/services/org.gnome.Ptyxis.service \
     ; else \
       mkdir -p "/usr/share/ublue-os/dconfs/desktop-silverblue/" && \
@@ -606,8 +605,11 @@ RUN --mount=type=cache,dst=/var/cache \
     chmod +x /usr/bin/waydroid-choose-gpu && \
     dnf5 config-manager setopt skip_if_unavailable=1 && \
     /ctx/ghcurl "https://github.com/ublue-os/toolboxes/raw/refs/heads/main/apps/docker/distrobox.ini" -Lo /etc/distrobox/docker.ini && \
+    setfattr -n user.component -v "toolbox-config" /etc/distrobox/docker.ini && \
     /ctx/ghcurl "https://github.com/ublue-os/toolboxes/raw/refs/heads/main/apps/incus/distrobox.ini" -Lo /etc/distrobox/incus.ini && \
+    setfattr -n user.component -v "toolbox-config" /etc/distrobox/incus.ini && \
     /ctx/ghcurl "https://raw.githubusercontent.com/ublue-os/bash-preexec/master/bash-preexec.sh" -Lo /usr/share/bash-prexec && \
+    setfattr -n user.component -v "bash-preexec" /usr/share/bash-prexec && \
     /ctx/image-info && \
     /ctx/build-initramfs && \
     /ctx/finalize
@@ -700,6 +702,7 @@ RUN --mount=type=cache,dst=/var/cache \
         --depth 1 \
         /tmp/jupiter-dock-updater-bin && \
     mv -v /tmp/jupiter-dock-updater-bin/packaged/usr/lib/jupiter-dock-updater /usr/libexec/jupiter-dock-updater && \
+    setfattr -n user.component -v "jupiter-dock-updater" /usr/libexec/jupiter-dock-updater/* && \
     ln -s /usr/bin/steamos-logger /usr/bin/steamos-info && \
     ln -s /usr/bin/steamos-logger /usr/bin/steamos-notice && \
     ln -s /usr/bin/steamos-logger /usr/bin/steamos-warning && \
@@ -728,8 +731,10 @@ RUN --mount=type=cache,dst=/var/cache \
     --mount=type=secret,id=GITHUB_TOKEN \
     mkdir -p /usr/share/gamescope-session-plus/ && \
     curl --retry 3 -Lo /usr/share/gamescope-session-plus/bootstrap_steam.tar.gz https://large-package-sources.nobaraproject.org/bootstrap_steam.tar.gz && \
+    setfattr -n user.component -v "bootstrap_steam" /usr/share/gamescope-session-plus/bootstrap_steam.tar.gz && \
     mkdir -p /usr/share/sdl/ && \
     /ctx/ghcurl "https://raw.githubusercontent.com/mdqinc/SDL_GameControllerDB/refs/heads/master/gamecontrollerdb.txt" -Lo /usr/share/sdl/gamecontrollerdb.txt && \
+    setfattr -n user.component -v "sdl2" /usr/share/sdl/gamecontrollerdb.txt && \
     dnf5 -y install \
     --repo copr:copr.fedorainfracloud.org:ublue-os:bazzite \
         gamescope-session-plus \
@@ -763,14 +768,14 @@ RUN --mount=type=cache,dst=/var/cache \
         systemctl disable gdm.service && \
         systemctl enable sddm.service \
     ; else \
-        systemctl disable usr-share-sddm-themes.mount \
+        systemctl disable usr-share-sddm-themes.mount && \
+        mkdir -p /tmp/bazzite-schema-test && \
+        find "/usr/share/glib-2.0/schemas/" -type f ! -name "*.gschema.override" -exec cp {} "/tmp/bazzite-schema-test/" \; && \
+        cp "/usr/share/glib-2.0/schemas/zz0-"*".gschema.override" "/tmp/bazzite-schema-test/" && \
+        glib-compile-schemas --strict /tmp/bazzite-schema-test && \
+        glib-compile-schemas /usr/share/glib-2.0/schemas &>/dev/null && \
+        rm -r /tmp/bazzite-schema-test \
     ; fi && \
-    mkdir -p /tmp/bazzite-schema-test && \
-    find "/usr/share/glib-2.0/schemas/" -type f ! -name "*.gschema.override" -exec cp {} "/tmp/bazzite-schema-test/" \; && \
-    cp "/usr/share/glib-2.0/schemas/zz0-"*".gschema.override" "/tmp/bazzite-schema-test/" && \
-    glib-compile-schemas --strict /tmp/bazzite-schema-test && \
-    glib-compile-schemas /usr/share/glib-2.0/schemas &>/dev/null && \
-    rm -r /tmp/bazzite-schema-test && \
     { rm -v /usr/share/applications/bazzite-steam-bpm.desktop || true; } && \
     systemctl enable hhd.service && \
     systemctl enable --global steamos-manager.service && \
@@ -851,17 +856,17 @@ RUN --mount=type=cache,dst=/var/cache \
     --mount=type=tmpfs,dst=/tmp \
     echo "import \"/usr/share/ublue-os/just/95-bazzite-nvidia.just\"" >> /usr/share/ublue-os/justfile && \
     if grep -q "silverblue" <<< "${BASE_IMAGE_NAME}"; then \
-      mkdir -p "/usr/share/ublue-os/dconfs/nvidia-silverblue/" && \
-      cp "/usr/share/glib-2.0/schemas/zz0-"*"-bazzite-nvidia-silverblue-"*".gschema.override" "/usr/share/ublue-os/dconfs/nvidia-silverblue/" && \
-      dconf-override-converter to-dconf "/usr/share/ublue-os/dconfs/nvidia-silverblue/zz0-"*"-bazzite-nvidia-silverblue-"*".gschema.override" && \
-      rm "/usr/share/ublue-os/dconfs/nvidia-silverblue/zz0-"*"-bazzite-nvidia-silverblue-"*".gschema.override" \
+        mkdir -p "/usr/share/ublue-os/dconfs/nvidia-silverblue/" && \
+        cp "/usr/share/glib-2.0/schemas/zz0-"*"-bazzite-nvidia-silverblue-"*".gschema.override" "/usr/share/ublue-os/dconfs/nvidia-silverblue/" && \
+        dconf-override-converter to-dconf "/usr/share/ublue-os/dconfs/nvidia-silverblue/zz0-"*"-bazzite-nvidia-silverblue-"*".gschema.override" && \
+        rm "/usr/share/ublue-os/dconfs/nvidia-silverblue/zz0-"*"-bazzite-nvidia-silverblue-"*".gschema.override" && \
+        mkdir -p /tmp/bazzite-schema-test && \
+        find "/usr/share/glib-2.0/schemas/" -type f ! -name "*.gschema.override" -exec cp {} "/tmp/bazzite-schema-test/" \; && \
+        cp "/usr/share/glib-2.0/schemas/zz0-"*".gschema.override" "/tmp/bazzite-schema-test/" && \
+        glib-compile-schemas --strict /tmp/bazzite-schema-test && \
+        glib-compile-schemas /usr/share/glib-2.0/schemas &>/dev/null && \
+        rm -r /tmp/bazzite-schema-test \
     ; fi && \
-    mkdir -p /tmp/bazzite-schema-test && \
-    find "/usr/share/glib-2.0/schemas/" -type f ! -name "*.gschema.override" -exec cp {} "/tmp/bazzite-schema-test/" \; && \
-    cp "/usr/share/glib-2.0/schemas/zz0-"*".gschema.override" "/tmp/bazzite-schema-test/" && \
-    glib-compile-schemas --strict /tmp/bazzite-schema-test && \
-    glib-compile-schemas /usr/share/glib-2.0/schemas &>/dev/null && \
-    rm -r /tmp/bazzite-schema-test && \
     systemctl disable supergfxd.service && \
     dnf5 config-manager setopt skip_if_unavailable=1 && \
     /ctx/image-info && \
