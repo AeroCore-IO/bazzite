@@ -257,7 +257,11 @@ jobs:
           HOMEBREW_BOTTLE_DOMAIN: ${{ vars.HOMEBREW_BOTTLE_DOMAIN }}
           ACR_REGISTRY: ${{ vars.ACR_REGISTRY }}
           ACR_NAMESPACE: ${{ vars.ACR_NAMESPACE }}
+          DECKY_MIRROR_HOST: ${{ vars.DECKY_MIRROR_HOST }}
+          DECKY_PLUGIN_MIRROR_HOST: ${{ vars.DECKY_PLUGIN_MIRROR_HOST }}
+          DECKY_PLUGIN_ID: ${{ vars.DECKY_PLUGIN_ID }}
         run: |
+          bash -n system_files/deck/shared/usr/libexec/aerocore-accelerator-installer.sh
           cat <<'EOF' >>build_args.txt
           BASE_IMAGE_NAME=${{ steps.base.outputs.base_image_name }}
           FEDORA_VERSION=${{ matrix.fedora_version }}
@@ -284,6 +288,14 @@ jobs:
           fi
           if [ -n "${HOMEBREW_BOTTLE_DOMAIN}" ]; then
             echo "HOMEBREW_BOTTLE_DOMAIN=${HOMEBREW_BOTTLE_DOMAIN}" >>build_args.txt
+          fi
+          if [[ "${{ matrix.image }}" == *deck* ]]; then
+            : "${DECKY_PLUGIN_ID:?Repository variable DECKY_PLUGIN_ID is required for deck images.}"
+            : "${DECKY_MIRROR_HOST:=decky.mirror.aerocore.com.cn}"
+            : "${DECKY_PLUGIN_MIRROR_HOST:=${DECKY_MIRROR_HOST}}"
+            echo "DECKY_MIRROR_HOST=${DECKY_MIRROR_HOST}" >>build_args.txt
+            echo "DECKY_PLUGIN_MIRROR_HOST=${DECKY_PLUGIN_MIRROR_HOST}" >>build_args.txt
+            echo "DECKY_PLUGIN_ID=${DECKY_PLUGIN_ID}" >>build_args.txt
           fi
 
       # Build image using buildah and save it to raw-img

@@ -1,5 +1,5 @@
 [Unit]
-Description=Aerocore Decky Installer
+Description=Aerocore Accelerator Setup
 After=network-online.target systemd-logind.service
 Wants=network-online.target
 ConditionPathExists=!/etc/systemd/system/multi-user.target.wants/plugin_loader.service
@@ -8,10 +8,10 @@ Requires=systemd-logind.service
 [Service]
 Type=oneshot
 Environment=INSTALL_WAIT_SECS=180
-ExecStart=/usr/libexec/aerocore-decky-install.sh
+EnvironmentFile=-/etc/environment.d/99-bazzite-mirrors.conf
+ExecStart=/usr/libexec/aerocore-accelerator-installer.sh
 StandardOutput=journal
 StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
-
