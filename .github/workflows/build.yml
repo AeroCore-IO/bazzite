@@ -96,6 +96,12 @@ jobs:
         with:
           target-dir: /var/lib/containers
 
+      - name: Lowercase Registry
+        id: registry_case
+        uses: ASzc/change-string-case-action@d0603cd0a7dd490be678164909f65c7737470a7f # v6
+        with:
+          string: ghcr.io/${{ github.repository_owner }}
+
       - name: Define base variables
         id: base
         run: |
@@ -138,7 +144,7 @@ jobs:
           # Define push and pull registries
           #
           PULL_REGISTRY=ghcr.io/ublue-os
-          PUSH_REGISTRY=ghcr.io/${{ github.repository_owner }}
+          PUSH_REGISTRY=${{ steps.registry_case.outputs.lowercase }}
           echo "push_registry=${PUSH_REGISTRY}" >> $GITHUB_OUTPUT
           echo "pull_registry=${PULL_REGISTRY}" >> $GITHUB_OUTPUT
           
