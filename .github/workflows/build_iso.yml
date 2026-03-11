@@ -23,15 +23,10 @@ jobs:
       matrix:
         image_name:
           - bazzite
-          - bazzite-gnome
           - bazzite-deck
           - bazzite-deck-gnome
           - bazzite-deck-nvidia
           - bazzite-deck-nvidia-gnome
-          - bazzite-nvidia
-          - bazzite-gnome-nvidia
-          - bazzite-nvidia-open
-          - bazzite-gnome-nvidia-open
         major_version: [43]
     steps:
 
