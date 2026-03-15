@@ -41,6 +41,8 @@ on:
         type: boolean
         default: false
 
+permissions: {}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
@@ -93,7 +95,7 @@ jobs:
 
       - name: Lowercase Registry
         id: registry_case
-        uses: ASzc/change-string-case-action@d0603cd0a7dd490be678164909f65c7737470a7f # v6
+        uses: ASzc/change-string-case-action@ecd1412d078f2e06e9eedcbaa6fcd988151c3f82 # v8
         with:
           string: ghcr.io/${{ github.repository_owner }}
 
@@ -440,6 +442,8 @@ jobs:
     name: Generate Release
     needs: [push-ghcr]
     if: github.event_name != 'pull_request'
+    permissions:
+      contents: write
     secrets: inherit
     uses: ./.github/workflows/generate_release.yml
 
