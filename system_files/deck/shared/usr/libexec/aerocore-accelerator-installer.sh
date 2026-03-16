@@ -5,10 +5,11 @@ set -euo pipefail
 : "${DECKY_PLUGIN_MIRROR_HOST:=${DECKY_MIRROR_HOST}}"
 : "${DECKY_PLUGIN_TARGET_ID:=}"
 : "${DECKY_PLUGIN_NAME:=aerocore-accelerator}"
+: "${RESTART_GAME_MODE_AFTER_INSTALL:=1}"
 
-TMP_INSTALLER=""
-TMP_DECKY_CLIENT=""
-TMP_DECKY_CLIENT_CHECKSUM=""
+: "${TMP_INSTALLER:=}"
+: "${TMP_DECKY_CLIENT:=}"
+: "${TMP_DECKY_CLIENT_CHECKSUM:=}"
 
 cleanup() {
   rm -f "${TMP_INSTALLER:-}" "${TMP_DECKY_CLIENT:-}" "${TMP_DECKY_CLIENT_CHECKSUM:-}"
@@ -116,7 +117,7 @@ run_as_target_user() {
     "$@"
 }
 
-invoke_as_target_user() {
+invoke_accelerator_install_as_target_user() {
   run_as_target_user bash "$0" install-accelerator
 }
 
@@ -129,6 +130,9 @@ ensure_home_deck_symlink() {
 
 install_decky_loader() {
   local skip_decky_install=false
+  local target_homebrew_dir
+
+  ensure_home_deck_symlink
 
   echo "Checking if Decky Loader is already installed and running..."
   if systemctl is-active --quiet plugin_loader.service 2>/dev/null; then
@@ -142,10 +146,8 @@ install_decky_loader() {
     return 0
   fi
 
-  ensure_home_deck_symlink
-
   TMP_INSTALLER="$(mktemp /tmp/decky_user_install_script.XXXXXX.sh)"
-  if ! curl -fsSL "https://${DECKY_MIRROR_HOST}/SteamDeckHomebrew/decky-installer/releases/latest/download/user_install_script.sh" \
+  if ! curl -fsSL "https://${DECKY_MIRROR_HOST}/SteamDeckHomebrew/decky-installer/releases/latest/download/install_release.sh" \
     | sed -E \
       -e "s#github\.com#${DECKY_MIRROR_HOST}#g" \
       -e "s#api\.github\.com#api.${DECKY_MIRROR_HOST}#g" \
@@ -159,6 +161,15 @@ install_decky_loader() {
   bash "${TMP_INSTALLER}"
   local installer_status=$?
   set -e
+
+  target_homebrew_dir="${HOME}/homebrew"
+  if [[ -d "${target_homebrew_dir}" ]]; then
+    chown -R "${TARGET_USER}:${TARGET_USER}" "${target_homebrew_dir}"
+  fi
+
+  if [[ -d "${target_homebrew_dir}/services/PluginLoader" ]]; then
+    chcon -R -t bin_t "${target_homebrew_dir}/services/PluginLoader" || true
+  fi
 
   if systemctl is-active --quiet plugin_loader.service 2>/dev/null; then
     echo "Decky Loader install completed (installer exit code: ${installer_status})."
@@ -207,6 +218,38 @@ configure_store_and_install_plugin() {
     --target-id "${DECKY_PLUGIN_TARGET_ID}"
 }
 
+restart_game_mode_session() {
+  require_root
+
+  if [[ "${RESTART_GAME_MODE_AFTER_INSTALL}" != "1" ]]; then
+    return 0
+  fi
+
+  if ! pgrep -u "${TARGET_USER}" -x steam >/dev/null 2>&1; then
+    echo "Steam is not running for ${TARGET_USER}. Skipping game mode restart."
+    return 0
+  fi
+
+  echo "Requesting Steam restart so Decky UI changes become visible in game mode..."
+  if ! run_as_target_user /usr/bin/steam -shutdown; then
+    echo "Failed to request Steam shutdown after Decky install." >&2
+    return 0
+  fi
+
+  local wait_secs=30
+  local end=$((SECONDS + wait_secs))
+  while (( SECONDS < end )); do
+    if ! pgrep -u "${TARGET_USER}" -x steam >/dev/null 2>&1; then
+      echo "Steam exited. Game mode should relaunch it automatically."
+      return 0
+    fi
+    sleep 1
+  done
+
+  echo "Steam did not exit within ${wait_secs}s after shutdown request." >&2
+  return 0
+}
+
 install_decky() {
   require_root
   trap cleanup EXIT
@@ -227,7 +270,8 @@ install_decky() {
   validate_config
   install_decky_loader
   download_decky_client
-  invoke_as_target_user
+  invoke_accelerator_install_as_target_user
+  restart_game_mode_session
 }
 
 install_accelerator() {
