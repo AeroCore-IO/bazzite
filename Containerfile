@@ -32,6 +32,7 @@ ARG FEDORA_VERSION="${FEDORA_VERSION:-43}"
 ARG ARCH="${ARCH:-x86_64}"
 ARG FLATPAK_REMOTE_URL="${FLATPAK_REMOTE_URL:-}"
 ARG HOMEBREW_BOTTLE_DOMAIN="${HOMEBREW_BOTTLE_DOMAIN:-}"
+ARG HOMEBREW_API_DOMAIN="${HOMEBREW_API_DOMAIN:-}"
 ARG DECKY_MIRROR_HOST="${DECKY_MIRROR_HOST:-}"
 ARG DECKY_PLUGIN_MIRROR_HOST="${DECKY_PLUGIN_MIRROR_HOST:-}"
 ARG DECKY_PLUGIN_ID="${DECKY_PLUGIN_ID:-}"
@@ -64,6 +65,7 @@ ARG VERSION_TAG="${VERSION_TAG}"
 ARG VERSION_PRETTY="${VERSION_PRETTY}"
 ARG FLATPAK_REMOTE_URL="${FLATPAK_REMOTE_URL:-}"
 ARG HOMEBREW_BOTTLE_DOMAIN="${HOMEBREW_BOTTLE_DOMAIN:-}"
+ARG HOMEBREW_API_DOMAIN="${HOMEBREW_API_DOMAIN:-}"
 ARG DECKY_MIRROR_HOST="${DECKY_MIRROR_HOST:-}"
 ARG DECKY_PLUGIN_MIRROR_HOST="${DECKY_PLUGIN_MIRROR_HOST:-}"
 ARG DECKY_PLUGIN_ID="${DECKY_PLUGIN_ID:-}"
@@ -615,7 +617,7 @@ RUN --mount=type=cache,dst=/var/cache \
     ln -s /usr/bin/true /usr/bin/pulseaudio && \
     mkdir -p /etc/flatpak/remotes.d && \
     curl --retry 3 -Lo /etc/flatpak/remotes.d/flathub.flatpakrepo https://dl.flathub.org/repo/flathub.flatpakrepo && \
-    if [[ -n "${FLATPAK_REMOTE_URL}" || -n "${HOMEBREW_BOTTLE_DOMAIN}" || -n "${DECKY_MIRROR_HOST}" || -n "${DECKY_PLUGIN_MIRROR_HOST}" || -n "${DECKY_PLUGIN_ID}" ]]; then \
+    if [[ -n "${FLATPAK_REMOTE_URL}" || -n "${HOMEBREW_BOTTLE_DOMAIN}" || -n "${HOMEBREW_API_DOMAIN}" || -n "${DECKY_MIRROR_HOST}" || -n "${DECKY_PLUGIN_MIRROR_HOST}" || -n "${DECKY_PLUGIN_ID}" ]]; then \
         mkdir -p /etc/environment.d /etc/skel/.config/environment.d; \
         :> /etc/environment.d/99-bazzite-mirrors.conf; \
         :> /etc/skel/.config/environment.d/99-bazzite-mirrors.conf; \
@@ -633,6 +635,9 @@ RUN --mount=type=cache,dst=/var/cache \
     fi && \
     if [[ -n "${HOMEBREW_BOTTLE_DOMAIN}" ]]; then \
         printf '%s\n' "HOMEBREW_BOTTLE_DOMAIN=${HOMEBREW_BOTTLE_DOMAIN}" | tee -a /etc/environment.d/99-bazzite-mirrors.conf /etc/skel/.config/environment.d/99-bazzite-mirrors.conf >/dev/null; \
+    fi && \
+    if [[ -n "${HOMEBREW_API_DOMAIN}" ]]; then \
+        printf '%s\n' "HOMEBREW_API_DOMAIN=${HOMEBREW_API_DOMAIN}" | tee -a /etc/environment.d/99-bazzite-mirrors.conf /etc/skel/.config/environment.d/99-bazzite-mirrors.conf >/dev/null; \
     fi && \
     if [[ -n "${DECKY_MIRROR_HOST}" ]]; then \
         printf '%s\n' "DECKY_MIRROR_HOST=${DECKY_MIRROR_HOST}" | tee -a /etc/environment.d/99-bazzite-mirrors.conf /etc/skel/.config/environment.d/99-bazzite-mirrors.conf >/dev/null; \

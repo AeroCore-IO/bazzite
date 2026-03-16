@@ -9,7 +9,7 @@ load_mirror_file() {
     while IFS='=' read -r key value; do
         [[ -z "$key" || "${key:0:1}" == "#" ]] && continue
         case "$key" in
-            FLATPAK_REMOTE_URL|HOMEBREW_BOTTLE_DOMAIN)
+            FLATPAK_REMOTE_URL|HOMEBREW_BOTTLE_DOMAIN|HOMEBREW_API_DOMAIN)
                 if is_valid_mirror_url "$value"; then
                     export "$key"="$value"
                 fi
