@@ -23,6 +23,11 @@ imageref="$(podman images --format '{{ index .Names 0 }}\n' 'bazzite*' | head -1
 imageref="${imageref##*://}"
 imageref="${imageref%%:*}"
 imagetag="$(podman images --format '{{ .Tag }}\n' "$imageref" | head -1)"
+if [[ -r /etc/environment.d/99-aerocore.conf ]]; then
+    # Prefer the image's configured registry and namespace over installer defaults.
+    # shellcheck disable=SC1091
+    source /etc/environment.d/99-aerocore.conf
+fi
 OSTREE_REGISTRY="${OSTREE_REGISTRY:-docker://ghcr.io}"
 OSTREE_NAMESPACE="${OSTREE_NAMESPACE:-${IMAGE_VENDOR:-ublue-os}}"
 sbkey='https://github.com/ublue-os/akmods/raw/main/certs/public_key.der'
