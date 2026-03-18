@@ -12,13 +12,20 @@
 # 7: Failure (e.g., uupd not installed, upgrade already installed, update checks failed, or connectivity check failed).
 # Dynamic: Value propagated from /usr/bin/hhd.steamos if it is executed and returns a non-20 code.
 
-if [[ -r /etc/environment.d/99-aerocore.conf ]]; then
-    # shellcheck disable=SC1091
-    source /etc/environment.d/99-aerocore.conf
-fi
-
-OSTREE_REGISTRY="${OSTREE_REGISTRY:-docker://ghcr.io}"
-UPDATE_REGISTRY_HOST="${OSTREE_REGISTRY#docker://}"
+BOOTED_REF=$(rpm-ostree status --json | jq -r '.deployments[] | select(.booted == true) | .["container-image-reference"] // empty' | head -1)
+case "$BOOTED_REF" in
+    ostree-image-signed:docker://*)
+        UPDATE_REGISTRY_HOST="${BOOTED_REF#ostree-image-signed:docker://}"
+        UPDATE_REGISTRY_HOST="${UPDATE_REGISTRY_HOST%%/*}"
+        ;;
+    ostree-unverified-registry:*)
+        UPDATE_REGISTRY_HOST="${BOOTED_REF#ostree-unverified-registry:}"
+        UPDATE_REGISTRY_HOST="${UPDATE_REGISTRY_HOST%%/*}"
+        ;;
+    *)
+        UPDATE_REGISTRY_HOST="ghcr.io"
+        ;;
+esac
 
 # Fake upgrade progress bar
 _fake_progress() {

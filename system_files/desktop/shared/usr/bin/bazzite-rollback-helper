@@ -2,18 +2,58 @@
 
 source /usr/lib/ujust/ujust.sh
 
-if [[ -r /etc/environment.d/99-aerocore.conf ]]; then
-  # shellcheck disable=SC1091
-  source /etc/environment.d/99-aerocore.conf
-fi
-
 IMAGE_INFO="/usr/share/ublue-os/image-info.json"
 DEFAULT_IMAGE=$(jq -r '."image-name"' < $IMAGE_INFO)
 DEFAULT_BRANCH=stable
-DEFAULT_PROVIDER="${OSTREE_NAMESPACE:-ublue-os}"
-OSTREE_REGISTRY="${OSTREE_REGISTRY:-docker://ghcr.io}"
-OSTREE_NAMESPACE="${OSTREE_NAMESPACE:-$DEFAULT_PROVIDER}"
-OSTREE_REGISTRY_HOST="${OSTREE_REGISTRY#docker://}"
+
+booted_ref() {
+  rpm-ostree status --json | jq -r '.deployments[] | select(.booted == true) | .["container-image-reference"] // empty' | head -1
+}
+
+fallback_ref() {
+  jq -r '."image-ref" // empty' < "$IMAGE_INFO"
+}
+
+parse_origin() {
+  local ref="$1"
+  local scheme=""
+  local ref_body=""
+  local path=""
+
+  case "$ref" in
+    ostree-image-signed:docker://*)
+      scheme="ostree-image-signed"
+      ref_body="${ref#ostree-image-signed:docker://}"
+      ;;
+    ostree-unverified-registry:*)
+      scheme="ostree-unverified-registry"
+      ref_body="${ref#ostree-unverified-registry:}"
+      ;;
+    *)
+      CURRENT_SIGNING_SCHEME="ostree-image-signed"
+      CURRENT_REGISTRY="docker://ghcr.io"
+      CURRENT_PROVIDER="ublue-os"
+      return
+      ;;
+  esac
+
+  CURRENT_SIGNING_SCHEME="$scheme"
+  CURRENT_REGISTRY="docker://${ref_body%%/*}"
+
+  path="${ref_body#*/}"
+  if [[ "$path" == "$ref_body" || "$path" != */* ]]; then
+    CURRENT_PROVIDER="ublue-os"
+    return
+  fi
+
+  CURRENT_PROVIDER="${path%%/*}"
+}
+
+CURRENT_IMAGE_REF="$(booted_ref)"
+if [[ -z "$CURRENT_IMAGE_REF" ]]; then
+  CURRENT_IMAGE_REF="$(fallback_ref)"
+fi
+parse_origin "$CURRENT_IMAGE_REF"
 
 # Cache skopeo output if possible (only if bkt already exists)
 if command -v bkt >/dev/null 2>&1; then
@@ -85,8 +125,11 @@ target_de() {
 }
 
 signing_scheme() {
-  local current=$(rpm-ostree status -b --json | jq -r '.deployments[]["container-image-reference"]')
-  [[ "$current" == *"ostree-image-signed"* ]] && echo "ostree-image-signed:${OSTREE_REGISTRY%/}" || echo "ostree-unverified-registry:${OSTREE_REGISTRY_HOST%/}"
+  if [[ "$CURRENT_SIGNING_SCHEME" == "ostree-unverified-registry" ]]; then
+    echo "ostree-unverified-registry:${CURRENT_REGISTRY#docker://}"
+  else
+    echo "ostree-image-signed:${CURRENT_REGISTRY}"
+  fi
 }
 
 warn_if_de_mismatch() {
@@ -124,7 +167,7 @@ skopeo_tags() {
     testing) regex="$regex | select(test(\"^testing\"))" ;;
   esac
   
-  skopeo list-tags "${OSTREE_REGISTRY%/}/$provider/$image" | jq -r "$regex" | sort
+  skopeo list-tags "${CURRENT_REGISTRY}/$provider/$image" | jq -r "$regex" | sort
 }
 
 available_variants() {
@@ -132,7 +175,7 @@ available_variants() {
   echo >&2 "Checking variants from $provider..."
   
   for variant in "${VARIANTS[@]}"; do
-    skopeo list-tags "${OSTREE_REGISTRY%/}/$provider/$variant" >/dev/null 2>&1 && echo "$variant"
+    skopeo list-tags "${CURRENT_REGISTRY}/$provider/$variant" >/dev/null 2>&1 && echo "$variant"
   done
 }
 
@@ -254,10 +297,10 @@ list_images() {
   
   if [[ "$branch" == "all" ]]; then
     echo >&2 "Listing all available images..."
-    skopeo_tags "$DEFAULT_PROVIDER" "bazzite" "all"
+    skopeo_tags "$DEFAULT_PROVIDER" "$DEFAULT_IMAGE" "all"
   else
     echo >&2 "Listing $branch images..."
-    skopeo_tags "$DEFAULT_PROVIDER" "bazzite" "$branch"
+    skopeo_tags "$DEFAULT_PROVIDER" "$DEFAULT_IMAGE" "$branch"
   fi
 }
 
