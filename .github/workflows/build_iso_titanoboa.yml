@@ -10,7 +10,7 @@ on:
       - installer/**
 
 env:
-  IMAGE_REGISTRY: ${{ vars.ACR_REGISTRY != '' && vars.ACR_REGISTRY || format('ghcr.io/{0}', github.repository_owner) }}
+  IMAGE_REGISTRY: ${{ vars.IMAGE_REGISTRY != '' && vars.IMAGE_REGISTRY || format('ghcr.io/{0}', github.repository_owner) }}
 
 permissions: {}
 
