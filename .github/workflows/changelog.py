@@ -10,15 +10,8 @@ REGISTRY = "docker://ghcr.io/ublue-os/"
 
 IMAGES = [
     "bazzite",
-    "bazzite-gnome",
     "bazzite-deck",
     "bazzite-deck-gnome",
-    "bazzite-deck-nvidia",
-    "bazzite-deck-nvidia-gnome",
-    "bazzite-nvidia",
-    "bazzite-gnome-nvidia",
-    "bazzite-nvidia-open",
-    "bazzite-gnome-nvidia-open",
 ]
 
 RETRIES = 3

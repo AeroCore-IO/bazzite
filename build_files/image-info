@@ -2,14 +2,14 @@
 
 set -eoux pipefail
 
-IMAGE_PRETTY_NAME="Bazzite"
+IMAGE_PRETTY_NAME="AeroCoreOS"
 IMAGE_LIKE="fedora"
-HOME_URL="https://bazzite.gg"
-DOCUMENTATION_URL="https://docs.bazzite.gg"
-SUPPORT_URL="https://discord.bazzite.gg"
-BUG_SUPPORT_URL="https://github.com/ublue-os/bazzite/issues/"
+HOME_URL="https://os.aerocore.com.cn"
+DOCUMENTATION_URL="https://docs.aerocore.com.cn"
+SUPPORT_URL="https://os.aerocore.com.cn/support"
+BUG_SUPPORT_URL="https://github.com/AeroCore-IO/bazzite/issues/"
 LOGO_ICON="bazzite-logo-icon"
-LOGO_COLOR="0;38;2;138;43;226"
+LOGO_COLOR="0;38;2;12;109;129"
 
 IMAGE_INFO="/usr/share/ublue-os/image-info.json"
 OSTREE_REGISTRY="${OSTREE_REGISTRY:-docker://ghcr.io}"
