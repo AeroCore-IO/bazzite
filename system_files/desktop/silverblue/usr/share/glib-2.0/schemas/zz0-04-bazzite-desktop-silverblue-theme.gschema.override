@@ -1,5 +1,5 @@
 [org.gnome.shell.extensions.user-theme]
-name='Bazzite'
+name='AeroCore OS'
 
 [org.gnome.desktop.wm.preferences]
 button-layout='appmenu:minimize,maximize,close'
