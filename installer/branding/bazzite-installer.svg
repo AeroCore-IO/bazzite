@@ -1,195 +1,35 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   width="128"
-   height="128"
-   version="1.0"
-   id="svg38"
-   sodipodi:docname="bazzite-installer.svg"
-   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:dc="http://purl.org/dc/elements/1.1/">
-  <metadata
-     id="metadata42">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <sodipodi:namedview
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1"
-     objecttolerance="10"
-     gridtolerance="10"
-     guidetolerance="10"
-     inkscape:pageopacity="0"
-     inkscape:pageshadow="2"
-     inkscape:window-width="2560"
-     inkscape:window-height="1368"
-     id="namedview40"
-     showgrid="false"
-     inkscape:zoom="8.015625"
-     inkscape:cx="63.937622"
-     inkscape:cy="63.937622"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="g36"
-     inkscape:showpageshadow="2"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1" />
-  <defs
-     id="defs16">
-    <linearGradient
-       xlink:href="#a"
-       id="b"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(.23214 0 0 .32895 -8.567 435.827)"
-       x1="88.596"
-       y1="-449.394"
-       x2="536.596"
-       y2="-449.394" />
-    <linearGradient
-       id="a">
-      <stop
-         offset="0"
-         stop-color="#acabae"
-         id="stop3" />
-      <stop
-         offset=".038"
-         stop-color="#f7f7f7"
-         id="stop5" />
-      <stop
-         offset=".077"
-         stop-color="#deddda"
-         id="stop7" />
-      <stop
-         offset=".923"
-         stop-color="#b0afad"
-         id="stop9" />
-      <stop
-         offset=".962"
-         stop-color="#c0bfbc"
-         id="stop11" />
-      <stop
-         offset="1"
-         stop-color="#77767b"
-         id="stop13" />
-    </linearGradient>
-    <linearGradient
-       id="paint0_linear_1016_105"
-       x1="50"
-       y1="50"
-       x2="550"
-       y2="550"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(-236,-64)">
-      <stop
-         offset="0.0684898"
-         stop-color="#0047AB"
-         id="stop7-3" />
-      <stop
-         offset="0.741212"
-         stop-color="#8A2BE2"
-         id="stop8" />
-    </linearGradient>
-  </defs>
-  <g
-     transform="translate(0 -172)"
-     id="g36">
-    <rect
-       ry="8"
-       rx="8"
-       y="188"
-       x="12"
-       height="100"
-       width="104"
-       style="marker:none"
-       fill="url(#b)"
-       id="rect18" />
-    <rect
-       style="marker:none"
-       width="104"
-       height="100"
-       x="12"
-       y="184"
-       rx="8"
-       ry="8"
-       fill="#fff"
-       id="rect20" />
-    <g
-       transform="translate(-104 -365.5)"
-       color="#000"
-       id="g26">
-      <rect
-         ry="4"
-         rx="4"
-         y="625.5"
-         x="128"
-         height="8"
-         width="80"
-         style="marker:none"
-         overflow="visible"
-         fill="#e1dedb"
-         id="rect22" />
-      <rect
-         ry="4"
-         rx="4"
-         y="625.5"
-         x="128"
-         height="8"
-         width="48.125"
-         style="marker:none;fill:#9141ac;fill-opacity:1"
-         overflow="visible"
-         fill="#3584e4"
-         id="rect24" />
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="104px" height="104px" viewBox="0 0 104 104" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>bazzite-installer</title>
+    <defs>
+        <linearGradient x1="-0.000312076923%" y1="99.9988437%" x2="99.9984572%" y2="99.9988437%" id="linearGradient-1">
+            <stop stop-color="#ACABAE" offset="0%"></stop>
+            <stop stop-color="#F7F7F7" offset="3.8%"></stop>
+            <stop stop-color="#DEDDDA" offset="7.7%"></stop>
+            <stop stop-color="#B0AFAD" offset="92.3%"></stop>
+            <stop stop-color="#C0BFBC" offset="96.2%"></stop>
+            <stop stop-color="#77767B" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="73.6318768%" y1="26.3681232%" x2="0%" y2="100%" id="linearGradient-2">
+            <stop stop-color="#006F84" offset="0%"></stop>
+            <stop stop-color="#00B875" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="bazzite-installer" fill-rule="nonzero">
+            <rect id="rect18" fill="url(#linearGradient-1)" x="0" y="4" width="104" height="100" rx="8"></rect>
+            <rect id="rect20" fill="#FFFFFF" x="0" y="0" width="104" height="100" rx="8"></rect>
+            <g id="g26" transform="translate(12, 76)">
+                <rect id="rect22" fill="#E1DEDB" x="0" y="0" width="80" height="8" rx="4"></rect>
+                <rect id="rect24" fill="#006F84" x="0" y="0" width="48.125" height="8" rx="4"></rect>
+            </g>
+            <g id="g1" transform="translate(28, 12)">
+                <circle id="Icon_BG_Circle" fill="url(#linearGradient-2)" cx="26" cy="26" r="26"></circle>
+                <path d="M25.9693944,10.3479118 C26.6109796,10.3451754 27.2349711,10.5071647 27.7799903,10.8162646 C28.3092228,11.1164112 28.7639804,11.5552737 29.0880691,12.1166118 L37.6973548,27.0282489 C37.1791585,26.3593453 36.4248187,25.9869932 35.6175458,25.9869932 L28.9301043,25.9869932 L26.0063087,20.9228172 L23.0825131,25.9869932 L16.3950477,25.9869932 C15.5860526,25.9869932 14.8303123,26.3610096 14.3392973,26.9869487 L22.9245376,12.1166118 C23.5757799,10.988627 24.7546549,10.355199 25.9693944,10.3479118 Z" id="Icon_Shape_Top" stroke="#979797" stroke-width="0.1" fill="#FFFFFF" opacity="0.400000006"></path>
+                <path d="M37.8692121,27.2999932 L43.1003275,36.3605553 L43.1003275,36.3605553 C44.0803568,38.0580157 43.498764,40.2285499 41.8013033,41.2085793 C40.1038429,42.1886086 37.9333084,41.6070157 36.9532791,39.9095553 L33.8762487,34.5799932 L18.1363427,34.5799932 L15.0593275,39.9095553 C14.0792982,41.6070157 11.9087639,42.1886086 10.2113033,41.2085793 C8.51384282,40.2285499 7.93224988,38.0580157 8.91227917,36.3605553 L14.14338,27.2999962 C14.6078247,26.4955517 15.466156,25.9999932 16.3950477,25.9999932 L35.6175458,25.9999932 C36.5464365,25.9999932 37.4047669,26.4955505 37.8692121,27.2999932 Z" id="Icon_Shape_Bottom" fill="#FFFFFF" opacity="0.800000012"></path>
+                <path d="M34.3394833,29.5034833 L32.9724691,29.5034833 C32.597105,29.5034833 32.292,29.8088904 32.292,30.186 C32.292,30.5654594 32.5967358,30.8685167 32.9724691,30.8685167 L34.3394833,30.8685167 L34.3394833,32.2355309 C34.3394833,32.6109287 34.6448904,32.916 35.022,32.916 C35.4014594,32.916 35.7045167,32.6112979 35.7045167,32.2355309 L35.7045167,30.8685167 L37.0715309,30.8685167 C37.4469287,30.8685167 37.752,30.5631096 37.752,30.186 C37.752,29.8065406 37.4472642,29.5034833 37.0715309,29.5034833 L35.7045167,29.5034833 L35.7045167,28.1364691 C35.7045167,27.7610713 35.3991096,27.456 35.022,27.456 C34.6425406,27.456 34.3394833,27.7607358 34.3394833,28.1364691 L34.3394833,29.5034833 Z" id="Icon_Deco_Plus" fill="#FFFFFF"></path>
+                <path d="M17.082,32.916 C15.5742477,32.916 14.352,31.6937188 14.352,30.186 C14.352,28.6782812 15.5742813,27.456 17.082,27.456 C18.5897523,27.456 19.812,28.6782812 19.812,30.186 C19.812,31.6937522 18.5897187,32.916 17.082,32.916 Z" id="Icon_Deco_Dot" fill="#FFFFFF"></path>
+            </g>
+        </g>
     </g>
-    <g
-       id="g1"
-       transform="matrix(0.103946,0,0,0.103946,59.326956,197.69324)">
-      <path
-         d="m -186,86 c 0,-55.2285 44.7715,-100 100,-100 H 64 c 138.071,0 250,111.929 250,250 v 0 C 314,374.071 202.071,486 64,486 v 0 C -74.071,486 -186,374.071 -186,236 Z"
-         fill="url(#paint0_linear_1016_105)"
-         id="path1"
-         style="fill:url(#paint0_linear_1016_105)" />
-      <path
-         fill-rule="evenodd"
-         clip-rule="evenodd"
-         d="M -58,-14 H 6 V 114 H 140.185 C 196.416,114 242,159.584 242,215.815 242,325.269 153.27,414 43.815,414 -12.416,414 -58,368.416 -58,312.185 V 178 H -186 V 114 H -58 Z M 6,178 V 312.185 C 6,333.07 22.93,350 43.815,350 117.923,350 178,289.923 178,215.815 178,194.93 161.07,178 140.185,178 Z"
-         fill="#ffffff"
-         fill-opacity="0.5"
-         id="path2" />
-      <path
-         d="M 6,46 C 6,29.4315 -7.431,16 -24,16 h -4 c -16.569,0 -30,13.4315 -30,30 v 68 h -68 c -16.5685,0 -30,13.431 -30,30 v 4 c 0,16.569 13.4315,30 30,30 h 68 v 68 c 0,16.569 13.431,30 30,30 h 4 c 16.569,0 30,-13.431 30,-30 v -68 h 68 c 16.569,0 30,-13.431 30,-30 v -4 C 104,127.431 90.569,114 74,114 H 6 Z"
-         fill="#ffffff"
-         fill-opacity="0.7"
-         id="path3" />
-      <path
-         d="m 76.5,141.67 c 3.333,1.924 3.333,6.736 0,8.66 l -21,12.124 c -3.333,1.925 -7.5,-0.481 -7.5,-4.33 v -24.248 c 0,-3.849 4.167,-6.255 7.5,-4.33 z"
-         fill="#ffffff"
-         id="path4" />
-      <path
-         d="m -21.67,248.5 c -1.924,3.333 -6.736,3.333 -8.66,0 l -12.124,-21 c -1.925,-3.333 0.481,-7.5 4.33,-7.5 h 24.248 c 3.849,0 6.255,4.167 4.33,7.5 z"
-         fill="#ffffff"
-         id="path5" />
-      <path
-         d="m -30.33,43.5 c 1.924,-3.333 6.736,-3.333 8.66,0 l 12.124,21 c 1.925,3.333 -0.481,7.5 -4.33,7.5 h -24.248 c -3.849,0 -6.255,-4.167 -4.33,-7.5 z"
-         fill="#ffffff"
-         id="path6" />
-      <path
-         d="m -128.5,150.33 c -3.333,-1.924 -3.333,-6.736 0,-8.66 l 21,-12.124 c 3.333,-1.925 7.5,0.481 7.5,4.33 v 24.248 c 0,3.849 -4.167,6.255 -7.5,4.33 z"
-         fill="#ffffff"
-         id="path7" />
-    </g>
-  </g>
 </svg>
