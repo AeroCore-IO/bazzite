@@ -2,6 +2,8 @@
 
 set -exo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 source /etc/os-release
 
 # Remove all versionlocks, in order to avoid dependency issues
@@ -36,18 +38,16 @@ SECUREBOOT_DOC_URL_QR="/usr/share/ublue-os/secure_boot_qr.png"
 
 echo "Bazzite release $VERSION_ID ($VERSION_CODENAME)" >/etc/system-release
 
-# Get Artwork
-git clone --depth 1 --quiet https://github.com/ublue-os/bazzite.git /root/packages
-case "${PRETTY_NAME,,}" in
-"bazzite"*)
+# Install branding assets from the current build context so local changes land in the ISO.
+BRANDING_DIR="${SCRIPT_DIR}/branding"
+if [[ -d "${BRANDING_DIR}" ]]; then
     mkdir -p /usr/share/anaconda/pixmaps/silverblue
-    cp -r /root/packages/installer/branding/* /usr/share/anaconda/pixmaps/
-    ;;
-esac
+    cp -r "${BRANDING_DIR}"/* /usr/share/anaconda/pixmaps/
+fi
 
 # Installer icon
-_icon=/root/packages/installer/branding/bazzite-installer.svg
-_icon_symbol=/root/packages/installer/branding/bazzite-installer-symbolic.svg
+_icon="${BRANDING_DIR}/bazzite-installer.svg"
+_icon_symbol="${BRANDING_DIR}/bazzite-installer-symbolic.svg"
 if [[ -f $_icon ]]; then
     for f in \
         /usr/share/icons/hicolor/48x48/apps/org.fedoraproject.AnacondaInstaller.svg \
@@ -58,7 +58,7 @@ if [[ -f $_icon ]]; then
 fi
 unset -v _icon
 unset -v _icon_symbol
-rm -rf /root/packages
+unset -v BRANDING_DIR
 
 # Secureboot Key Fetch
 mkdir -p /usr/share/ublue-os
