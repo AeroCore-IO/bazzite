@@ -67,6 +67,20 @@ jobs:
 
           echo "flatpak-dir-shortname=${FLATPAK_DIR_SHORTNAME}" >> $GITHUB_OUTPUT
 
+      - name: Set ISO Output Name
+        id: generate-iso-output-name
+        shell: bash
+        run: |
+          ISO_OUTPUT_NAME="${{ matrix.image_name }}"
+
+          if [[ "${ISO_OUTPUT_NAME}" == "bazzite" ]]; then
+            ISO_OUTPUT_NAME="aerocore-os"
+          else
+            ISO_OUTPUT_NAME="${ISO_OUTPUT_NAME/#bazzite-/aerocore-os-}"
+          fi
+
+          echo "iso-output-name=${ISO_OUTPUT_NAME}" >> $GITHUB_OUTPUT
+
       # Docker requires lowercase registry references
       - name: Lowercase Registry
         id: registry_case
@@ -123,7 +137,7 @@ jobs:
           image_tag: ${{ steps.generate-tag.outputs.tag }}
           secure_boot_key_url: '${{ github.server_url }}/${{ github.repository }}/raw/main/secure_boot.der'
           enrollment_password: 'universalblue'
-          iso_name: ${{ matrix.image_name }}-${{ steps.generate-tag.outputs.tag }}-amd64.iso
+          iso_name: ${{ steps.generate-iso-output-name.outputs.iso-output-name }}-${{ steps.generate-tag.outputs.tag }}-amd64.iso
           enable_cache_dnf: "false"
           enable_cache_skopeo: "false"
           flatpak_remote_refs_dir: ${{ steps.generate-flatpak-dir-shortname.outputs.flatpak-dir-shortname }}
@@ -157,7 +171,7 @@ jobs:
         #if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: ${{ matrix.image_name }}-${{ steps.generate-tag.outputs.tag }}-${{ matrix.major_version}}
+          name: ${{ steps.generate-iso-output-name.outputs.iso-output-name }}-${{ steps.generate-tag.outputs.tag }}-${{ matrix.major_version}}
           path: ${{ steps.upload-directory.outputs.iso-upload-dir }}
           if-no-files-found: error
           retention-days: 0
