@@ -170,11 +170,26 @@ jobs:
           sha256sum ${DEST} > ${DEST}-CHECKSUM
           echo "iso-upload-dir=${ISO_UPLOAD_DIR}" >> $GITHUB_OUTPUT
 
+      - name: Display ISO Checksum
+        shell: bash
+        run: |
+          ISO_NAME=$(basename "${{ steps.build.outputs.iso-dest }}")
+          CHECKSUM_PATH="${{ steps.upload-directory.outputs.iso-upload-dir }}/${ISO_NAME}-CHECKSUM"
+
+          {
+            echo "# ISO Checksum (SHA256)"
+            echo '```'
+            echo "ISO: ${ISO_NAME}"
+            cat "${CHECKSUM_PATH}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          cat "${CHECKSUM_PATH}"
+
       - name: Upload ISOs and Checksum to Job Artifacts
         if: github.ref_name == 'testing'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: ${{ steps.generate-iso-output-name.outputs.iso-output-name }}-${{ steps.generate-tag.outputs.tag }}-${{ matrix.major_version}}
+          name: ${{ steps.generate-iso-output-name.outputs.iso-output-name }}-${{ steps.generate-tag.outputs.tag }}
           path: ${{ steps.upload-directory.outputs.iso-upload-dir }}
           if-no-files-found: error
           retention-days: 1
