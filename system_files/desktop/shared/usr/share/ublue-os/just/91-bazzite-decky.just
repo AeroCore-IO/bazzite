@@ -291,3 +291,7 @@ get-decky-bazzite-buddy:
 get-framegen:
     #!/usr/bin/bash
     ujust install-decky-plugins decky-framegen
+
+get-decky-lossless-scaling:
+    #!/usr/bin/bash
+    ujust install-decky-plugins decky-lsfg-vk
