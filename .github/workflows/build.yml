@@ -40,9 +40,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
 
-env:
-  IMAGE_REGISTRY: ${{ vars.IMAGE_REGISTRY != '' && vars.IMAGE_REGISTRY || format('ghcr.io/{0}', github.repository_owner) }}
-
 jobs:
   push-ghcr:
     name: Make
@@ -93,7 +90,9 @@ jobs:
       # The image registry name must be lower-case, but GitHub usernames can be capitalized.
       - name: Get lower-case equivalent of the repository owner's username
         id: repo_owner_case
-        run: echo "lowercase=${IMAGE_REGISTRY,,}" >> "$GITHUB_OUTPUT"
+        env:
+          REPO_OWNER: ${{ github.repository_owner }}
+        run: echo "lowercase=${REPO_OWNER,,}" >> "$GITHUB_OUTPUT"
 
       - name: Define base variables
         id: base
@@ -137,11 +136,11 @@ jobs:
           # Define push and pull registries
           #
           PULL_REGISTRY=ghcr.io/ublue-os
-          PUSH_REGISTRY=${{ steps.repo_owner_case.outputs.lowercase }}
+          PUSH_REGISTRY=ghcr.io/${{ steps.repo_owner_case.outputs.lowercase }}
           echo "push_registry=${PUSH_REGISTRY}" >> $GITHUB_OUTPUT
           echo "pull_registry=${PULL_REGISTRY}" >> $GITHUB_OUTPUT
-          echo "image_namespace=${PUSH_REGISTRY##*/}" >> $GITHUB_OUTPUT
-          
+          echo "image_namespace=${{ steps.repo_owner_case.outputs.lowercase }}" >> $GITHUB_OUTPUT
+
           echo "output_image=${PUSH_REGISTRY}/${{ matrix.image }}" >> $GITHUB_OUTPUT
           BASE_IMAGE="${PULL_REGISTRY}/$BASE_IMAGE_NAME-${{ matrix.base_image_flavor }}:${{ matrix.fedora_version }}"
           echo "base_image=${BASE_IMAGE}" >> $GITHUB_OUTPUT
@@ -528,23 +527,28 @@ jobs:
           retry_wait_seconds: 15
           timeout_minutes: 10
           command: |
+            set -euo pipefail
             log_sum() { echo "$1" >> $GITHUB_STEP_SUMMARY; }
             log_sum '# Push to GHCR result'
             log_sum '```'
 
             dest_image="${OUTPUT_IMAGE}:${VERSION}"
-            sudo skopeo copy ${RECHUNK_REF} docker://$dest_image
+            sudo skopeo copy "${RECHUNK_REF}" "docker://$dest_image"
             log_sum "$dest_image"
 
             for tag in ${ALIAS_TAGS}; do
               dest_image="${OUTPUT_IMAGE}:$tag"
-              sudo skopeo copy ${RECHUNK_REF} docker://$dest_image
+              sudo skopeo copy "${RECHUNK_REF}" "docker://$dest_image"
               log_sum "$dest_image"
             done
             log_sum '```'
 
             digest=$(sudo skopeo inspect --format '{{.Digest}}' docker://${OUTPUT_IMAGE}:${VERSION})
-            echo "digest=${digest}" >> $GITHUB_OUTPUT
+            if [ -z "$digest" ]; then
+              echo "Failed to resolve digest for ${OUTPUT_IMAGE}:${VERSION}" >&2
+              exit 1
+            fi
+            echo "digest=${digest}" >> "$GITHUB_OUTPUT"
 
       - name: Install Cosign
         if: github.event_name != 'pull_request'
@@ -554,10 +558,17 @@ jobs:
 
       - name: Sign container image
         if: github.event_name != 'pull_request'
-        run: |
-          cosign sign -y --key env://COSIGN_PRIVATE_KEY --new-bundle-format=false ${{ steps.base.outputs.output_image }}@${{ steps.push.outputs.digest }}
         env:
           COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
+          IMAGE: ${{ steps.base.outputs.output_image }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          set -euo pipefail
+          if [ -z "$DIGEST" ]; then
+            echo "Push step did not produce an image digest" >&2
+            exit 1
+          fi
+          cosign sign -y --key env://COSIGN_PRIVATE_KEY --new-bundle-format=false "${IMAGE}@${DIGEST}"
 
       - name: Install ORAS
         if: github.event_name != 'pull_request'
@@ -576,16 +587,21 @@ jobs:
           DIGEST: ${{ steps.push.outputs.digest }}
           SBOM: ${{ steps.generate-sbom.outputs.SBOM }}
         run: |
+          set -euo pipefail
+          if [ -z "$DIGEST" ]; then
+            echo "Push step did not produce an image digest" >&2
+            exit 1
+          fi
           cd "$(dirname "${SBOM}")"
           oras attach \
             --artifact-type application/vnd.spdx+json \
-            --annotation filename=$(basename "$SBOM") \
+            --annotation "filename=$(basename "$SBOM")" \
             "${IMAGE}@${DIGEST}" \
-            "$(basename ${SBOM})"
+            "$(basename "$SBOM")"
 
           sbom_digest=$(oras discover --format json "${IMAGE}@${DIGEST}" | jq -r '.referrers[] | select(.artifactType == "application/vnd.spdx+json") | .digest')
 
-          echo "sbom_digest=${sbom_digest}" >> $GITHUB_OUTPUT
+          echo "sbom_digest=${sbom_digest}" >> "$GITHUB_OUTPUT"
 
       - name: Sign SBOM OCI Artifact
         if: github.event_name != 'pull_request'
@@ -594,7 +610,12 @@ jobs:
           IMAGE: ${{ steps.base.outputs.output_image }}
           SBOM_DIGEST: ${{ steps.upload-sbom.outputs.sbom_digest }}
         run: |
-          cosign sign -y --key env://COSIGN_PRIVATE_KEY --new-bundle-format=false ${IMAGE}@${SBOM_DIGEST}
+          set -euo pipefail
+          if [ -z "$SBOM_DIGEST" ]; then
+            echo "Upload SBOM step did not produce an artifact digest" >&2
+            exit 1
+          fi
+          cosign sign -y --key env://COSIGN_PRIVATE_KEY --new-bundle-format=false "${IMAGE}@${SBOM_DIGEST}"
 
       - name: Attestation
         if: github.event_name != 'pull_request'
@@ -620,13 +641,14 @@ jobs:
           attempt_limit: 3
           attempt_delay: 15000
           command: |
+            set -euo pipefail
             log_sum() { echo "$1" >> $GITHUB_STEP_SUMMARY; }
             log_sum '# Push to ACR result'
             log_sum '```'
             echo "$ACR_PASSWORD" | sudo podman login "$ACR_REGISTRY" -u "$ACR_USERNAME" --password-stdin
             for tag in ${{ steps.generate-tags.outputs.alias_tags }}; do
               dest_image="$ACR_REGISTRY/$ACR_NAMESPACE/${{ matrix.image }}:$tag"
-              sudo skopeo copy ${{ steps.rechunk.outputs.ref }} docker://$dest_image
+              sudo skopeo copy "${{ steps.rechunk.outputs.ref }}" "docker://$dest_image"
               log_sum "$dest_image"
             done
             log_sum '```'
