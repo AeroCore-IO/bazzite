@@ -40,7 +40,7 @@ ARG DECKY_PLUGIN_ID="${DECKY_PLUGIN_ID:-}"
 ARG BASE_IMAGE="${BASE_IMAGE:-ghcr.io/ublue-os/${BASE_IMAGE_NAME}-main:${FEDORA_VERSION}}"
 ARG NVIDIA_BASE="${NVIDIA_BASE:-bazzite}"
 ARG KERNEL_FLAVOR="${KERNEL_FLAVOR:-ogc}"
-ARG KERNEL_VERSION="${KERNEL_VERSION:-6.19.14-ogc1.1.fc44.x86_64}"
+ARG KERNEL_VERSION="${KERNEL_VERSION:-6.19.14-ogc2.1.fc44.x86_64}"
 ARG NVIDIA_FLAVOR="${NVIDIA_FLAVOR:-nvidia-open}"
 
 FROM ghcr.io/ublue-os/akmods:${KERNEL_FLAVOR}-${FEDORA_VERSION}-${KERNEL_VERSION} AS akmods
@@ -313,7 +313,6 @@ RUN --mount=type=cache,dst=/var/cache \
     /ctx/ghcurl "https://github.com/ykshek/Sunshine/raw/1347f9ef290c089b815cf186f7d361470bdb9ef7/src_assets/linux/misc/postinst" -Lo /usr/libexec/sunshine-postinst && \
     chmod +x /usr/libexec/sunshine-postinst && \
     setfattr -n user.component -v "extest" /usr/lib/extest/libextest.so && \
-    sed -i 's|uupd|& --disable-module-distrobox|' /usr/lib/systemd/system/uupd.service && \
     mkdir -p /etc/xdg/autostart && \
     sed -i~ -E 's/=.\$\(command -v (nft|ip6?tables-legacy).*/=/g' /usr/lib/waydroid/data/scripts/waydroid-net.sh && \
     sed -i 's/ --xdg-runtime=\\"${XDG_RUNTIME_DIR}\\"//g' /usr/bin/btrfs-assistant-launcher && \
