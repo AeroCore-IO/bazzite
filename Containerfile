@@ -427,7 +427,7 @@ RUN --mount=type=cache,dst=/var/cache \
         mkdir -p /usr/share/wallpapers/bazzite/convergence/contents/images && \
         ln -s /usr/share/wallpapers/convergence.jxl /usr/share/wallpapers/bazzite/convergence/contents/images/3940x2160.jxl \
     ; else \
-        dnf5 -y install \
+        dnf5 -y install --skip-unavailable \
             nautilus-gsconnect \
             steamdeck-backgrounds \
             steamdeck-gnome-presets \
