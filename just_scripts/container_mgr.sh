@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 valid_manager=(
+    buildah
     docker
     podman
     podman-remote
@@ -10,10 +11,12 @@ if [[ -n ${CONTAINER_MGR} ]]; then
     else
         exit 1
     fi
-elif [[ $(command -v docker) ]]; then
-    echo docker
+elif [[ $(command -v buildah) ]]; then
+    echo buildah
 elif [[ $(command -v podman) ]]; then
     echo podman
+elif [[ $(command -v docker) ]]; then
+    echo docker
 elif [[ $(command -v podman-remote) ]];then
     echo podman-remote
 else
