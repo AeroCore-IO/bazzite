@@ -31,6 +31,14 @@ on:
   merge_group:
   workflow_dispatch:
     inputs:
+      images:
+        description: "Images to build"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - deck
       handwritten:
         description: "Small changelog:"
 
@@ -54,10 +62,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image:
-          - bazzite
-          - bazzite-deck
-          - bazzite-deck-gnome
+        image: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.images == 'deck' && '["bazzite-deck","bazzite-deck-gnome"]' || '["bazzite","bazzite-deck","bazzite-deck-gnome"]') }}
         include:
           - fedora_version: 44
             kernel_flavor: ogc
