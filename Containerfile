@@ -732,7 +732,8 @@ RUN --mount=type=cache,dst=/var/cache \
     --mount=type=tmpfs,dst=/tmp \
     dnf5 -y swap \
     --repo copr:copr.fedorainfracloud.org:ublue-os:bazzite \
-        upower upower && \
+        upower upower || \
+        echo "Patched upower is unavailable; keeping the installed Fedora upower package." && \
     dnf5 versionlock add \
         upower \
         upower-libs && \
