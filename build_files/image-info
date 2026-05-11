@@ -9,7 +9,7 @@ HOME_URL="https://os.aerocore.com.cn"
 DOCUMENTATION_URL="https://docs.os.aerocore.com.cn"
 SUPPORT_URL="https://os.aerocore.com.cn/support"
 BUG_SUPPORT_URL="https://github.com/AeroCore-IO/bazzite/issues/"
-LOGO_ICON="bazzite-logo-icon"
+LOGO_ICON="distributor-logo"
 LOGO_COLOR="0;38;2;12;109;129"
 
 IMAGE_INFO="/usr/share/ublue-os/image-info.json"
