@@ -237,14 +237,14 @@ qrencode -o "$SECUREBOOT_DOC_URL_QR" "$SECUREBOOT_DOC_URL"
         ublue-os-media-automount.service \
         ublue-system-setup.service \
         check-sb-key.service; do
-        systemctl disable $s
+        systemctl disable "$s" || true
     done
 
     for s in \
         ublue-flatpak-manager.service \
         podman-auto-update.timer \
         ublue-user-setup.service; do
-        systemctl --global disable $s
+        systemctl --global disable "$s" || true
     done
 )
 
