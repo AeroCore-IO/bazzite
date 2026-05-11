@@ -789,10 +789,10 @@ RUN --mount=type=cache,dst=/var/cache \
     { rm -v /usr/share/applications/bazzite-steam-bpm.desktop || true; } && \
     systemctl enable --global steamos-manager.service && \
     systemctl enable bazzite-autologin.service && \
-    systemctl enable wireplumber-workaround.service && \
-    systemctl enable wireplumber-sysconf.service && \
-    systemctl enable pipewire-workaround.service && \
-    systemctl enable pipewire-sysconf.service && \
+    { systemctl enable wireplumber-workaround.service || true; } && \
+    { systemctl enable wireplumber-sysconf.service || true; } && \
+    { systemctl enable pipewire-workaround.service || true; } && \
+    { systemctl enable pipewire-sysconf.service || true; } && \
     systemctl enable bazzite-tdpfix.service && \
     systemctl --global disable sdgyrodsu.service && \
     systemctl disable input-remapper.service && \
