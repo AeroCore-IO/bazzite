@@ -794,13 +794,13 @@ RUN --mount=type=cache,dst=/var/cache \
     { systemctl enable pipewire-workaround.service || true; } && \
     { systemctl enable pipewire-sysconf.service || true; } && \
     systemctl enable bazzite-tdpfix.service && \
-    systemctl --global disable sdgyrodsu.service && \
-    systemctl disable input-remapper.service && \
-    systemctl disable uupd.timer && \
-    systemctl disable jupiter-fan-control.service && \
-    systemctl disable vpower.service && \
-    systemctl disable jupiter-biosupdate.service && \
-    systemctl disable jupiter-controller-update.service && \
+    { systemctl --global disable sdgyrodsu.service || true; } && \
+    { systemctl disable input-remapper.service || true; } && \
+    { systemctl disable uupd.timer || true; } && \
+    { systemctl disable jupiter-fan-control.service || true; } && \
+    { systemctl disable vpower.service || true; } && \
+    { systemctl disable jupiter-biosupdate.service || true; } && \
+    { systemctl disable jupiter-controller-update.service || true; } && \
     dnf5 config-manager setopt skip_if_unavailable=1 && \
     /ctx/image-info && \
     /ctx/build-initramfs && \
