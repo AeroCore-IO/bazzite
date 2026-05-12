@@ -41,7 +41,7 @@ if [[ $PKEXEC_UID -eq 0 ]]; then
     die "You must not execute this script as root."
 fi
 
-_APP_NAME="Bazzite Bootloader Restoring Tool"
+_APP_NAME="AeroCore OS Bootloader Restoring Tool"
 DRY_RUN=${DRY_RUN:-0}
 MNT=/tmp/mnt
 trap 'umount --recursive $MNT/boot 2>/dev/null' EXIT
@@ -52,7 +52,7 @@ DISK_PATH=$(
         echo "$size"
         echo "$model"
     done | yad --list --no-buttons \
-        --text="Double-click the disk where you installed Bazzite:" --width=500 --height=300 \
+        --text="Double-click the disk where you installed AeroCore OS:" --width=500 --height=300 \
         --column="Device" \
         --column="Size" \
         --column="Model" \

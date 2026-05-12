@@ -3,7 +3,7 @@ conky -c /usr/share/conky/conky.conf &
 # if CSM/Legacy show blocking message and power off
 if [[ ! -d /sys/firmware/efi ]]; then
     yad --undecorated --on-top --timeout=0 --button=Shutdown:0 \
-        --text="Bazzite does not support CSM/Legacy Boot. Please boot into your UEFI/BIOS settings, disable CSM/Legacy Mode, and reboot." || true
+        --text="AeroCore OS does not support CSM/Legacy Boot. Please boot into your UEFI/BIOS settings, disable CSM/Legacy Mode, and reboot." || true
     systemctl poweroff || shutdown -h now || true
 fi
 block_low_memory_install(){
@@ -23,7 +23,7 @@ else
  return 0
 fi
 serve_docs
-   text="You need <b>at least 8GB of system memory</b>  to install Bazzite. \n\n Installation with 4GB or less memory will likely fail.\n\nDetected amount of memory: $gb_memory\n\n Please read <a href=\"http://127.0.0.1:1290/Gaming/Hardware_compatibility_for_gaming/#minimum-system-requirements\">here</a> about minimum system requirements for Bazzite."
+   text="You need <b>at least 8GB of system memory</b>  to install AeroCore OS. \n\n Installation with 4GB or less memory will likely fail.\n\nDetected amount of memory: $gb_memory\n\n Please read <a href=\"http://127.0.0.1:1290/Gaming/Hardware_compatibility_for_gaming/#minimum-system-requirements\">here</a> about minimum system requirements for AeroCore OS."
     title="Not enough memory"
     while true; do
     yad --undecorated --on-top --timeout=0 --button=Shutdown:0  --warning --buttons-layout=center --text-align=center --title="$title" --text="$text"
@@ -46,7 +46,7 @@ welcome_dialog() {
     _EXITLOCK=1
     _RETVAL=0
     local welcome_text="
-Welcome to the Live ISO for Bazzite\\!
+Welcome to the Live ISO for AeroCore OS\\!
 
 The Live ISO is designed for installation and troubleshooting.
 It does <b>not</b> have drivers and is <b>not capable of playing games.</b>
@@ -62,7 +62,7 @@ does not represent the installed experience."
             --buttons-layout=center \
             --title="Welcome" \
             --text="$welcome_text" \
-            --button="Install Bazzite":10 \
+            --button="Install AeroCore OS":10 \
             --button="Launch Bootloader Restoring tool":20 \
             --button="Close dialog":0
         _RETVAL=$?
@@ -128,23 +128,23 @@ nvidia_hardware_helper() {
             image="amd_intel"
         fi
         #user facing text
-        title="Bazzite Hardware Helper"
-        image_detected="Detected Bazzite version: $(echo "$image_name" |  cut -d '/' -f3)\n\n"
-        qrencode -o "\$SUPPORT_QR" "https://discord.bazzite.gg"
-        support="\n\n\nPlease join our <a href=\"https://discord.bazzite.gg\"><b>Discord Server</b></a> (scan the QR code) for support."
+        title="AeroCore OS Hardware Helper"
+        image_detected="Detected AeroCore OS version: $(echo "$image_name" |  cut -d '/' -f3)\n\n"
+        qrencode -o "\$SUPPORT_QR" "https://os.aerocore.com.cn/support"
+        support="\n\n\nPlease visit <a href=\"https://os.aerocore.com.cn/support\"><b>AeroCore OS Support</b></a> (scan the QR code) for support."
         heading_nvidia_deck="<b>STEAM GAMING MODE IN BETA ON NVIDIA HARDWARE</b>\n"
-        detected_nvidia_deck="WARNING: Nvidia GPU Support in Steam Gaming mode and on HTPCs is available as a beta with known issues that <b>cannot be fixed</b> by Bazzite.\n\n"
+        detected_nvidia_deck="WARNING: Nvidia GPU Support in Steam Gaming mode and on HTPCs is available as a beta with known issues that <b>cannot be fixed</b> by AeroCore OS.\n\n"
         recommend_nvidia_deck="Unless you're a Linux driver developer, or looking for a known-broken toy to play with, we <b>strongly recommend</b> using one of our Desktop images without Steam Gaming Mode."
         heading_unsupported="<b>Unsupported Graphics Card</b>\n"
         detected_unsupported="We've detected you're using a now unsupported NVIDIA GPU.\nUnfortunately, we cannot provide good support for your hardware ourselves.\n"
         recommend_unsupported="Please read our <a href=\"http://127.0.0.1:1290/General/FAQ/#will-support-for-much-older-nvidia-graphics-cards-be-added\"><b>documentation</b></a> for more information.\n"
         heading_unknown="<b>Unknown Graphics Card</b>\n"
         detected_unknown="We could not identify your NVIDIA graphics card.\n"
-        recommend_unknown="It is not recommended to install Bazzite as we cannot guarantee your hardware will work."
+        recommend_unknown="It is not recommended to install AeroCore OS as we cannot guarantee your hardware will work."
         heading_wrong_image="<b>WRONG IMAGE DETECTED</b>\n"
-        detected_wrong_image="Your $support_status NVIDIA graphics card needs a different version of Bazzite.\n"
+        detected_wrong_image="Your $support_status NVIDIA graphics card needs a different version of AeroCore OS.\n"
         recommend_wrong_image="Pick $correct_image as \"vendor of your primary GPU\" on the website to download and install the correct version instead."
-        button1="I KNOW WHAT I AM DOING. Install Bazzite Anyway:0"
+        button1="I KNOW WHAT I AM DOING. Install AeroCore OS Anyway:0"
         button2="Power Off:1"
         heading2="More Information"
         button3="More Information:2"
@@ -217,7 +217,7 @@ for device in "${!mount[@]}"; do
             [[ "$base" == "fedora" || "$base" == "boot" ]] && continue
             grub=("$dir"/grub*.efi)
             (( ! ${#grub[@]} )) && continue
-            echo "The GRUB bootloader seems to be installed on $device at ${dir#$mnt}\nBazzite <a href=\"http://127.0.0.1:1290/General/Installation_Guide/troubleshoot_guide/#error-code-1\">does not support dual boot with any other Linux installation.</a> \nInstalls to this disk that attempt to reuse this EFI partition will fail.\nEither Bazzite must be installed to a different disk, or this partition or boot loader must be removed.\n\nPlease see the <a href=\"http://127.0.0.1:1290/General/Installation_Guide/troubleshoot_guide/#how-to-remove-an-orphaned-copy-of-grub\">documentation</a> for instructions.\n"
+            echo "The GRUB bootloader seems to be installed on $device at ${dir#$mnt}\nAeroCore OS <a href=\"http://127.0.0.1:1290/General/Installation_Guide/troubleshoot_guide/#error-code-1\">does not support dual boot with any other Linux installation.</a> \nInstalls to this disk that attempt to reuse this EFI partition will fail.\nEither AeroCore OS must be installed to a different disk, or this partition or boot loader must be removed.\n\nPlease see the <a href=\"http://127.0.0.1:1290/General/Installation_Guide/troubleshoot_guide/#how-to-remove-an-orphaned-copy-of-grub\">documentation</a> for instructions.\n"
         done
     ' || true)
     [ "$msg" ] || continue

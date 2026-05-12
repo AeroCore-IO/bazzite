@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Icon=tools-wizard-symbolic
-Name=Bazzite Bootloader Restoring Tool BETA
+Name=AeroCore OS Bootloader Restoring Tool BETA
 Comment=Restore the bootloader of an installation if has been overriden by Windows
 Keywords=bootloader;fix;grub;windows
 Categories=System;Utility
